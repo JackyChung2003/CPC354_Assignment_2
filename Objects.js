@@ -224,7 +224,7 @@ function drawSphere() {
 
 function drawWall() {
     modelViewMatrix = mat4();
-    modelViewMatrix = mult(modelViewMatrix, translate(0, 0, -5)); // Position wall at far Z boundary
+    modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0)); // Position wall at far Z boundary
     modelViewMatrix = mult(modelViewMatrix, scale(8, 4.5, 0.01)); // Adjust scale to fit scene
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
