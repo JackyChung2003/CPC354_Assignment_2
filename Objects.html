@@ -406,145 +406,166 @@
 
         <!-- Global Controls -->
         <div class="control-panel global-controls">
-          <div class="settings-grid">
-            <!-- Animation Speed -->
-            <div class="setting-item">
-              <label>Speed</label>
-              <input
-                type="range"
-                id="slider-speed"
-                min="0.1"
-                max="2.0"
-                step="0.1"
-                value="1.0"
-              />
-              <span id="text-speed">1.0</span>
-            </div>
-
-            <!-- Lighting Controls -->
-            <div class="setting-item">
-              <label>Ambient</label>
-              <input
-                type="range"
-                id="slider-ambient"
-                min="0.1"
-                max="1"
-                step="0.1"
-                value="0.5"
-              />
-              <span id="text-ambient">0.5</span>
-            </div>
-
-            <div class="setting-item">
-              <label>Diffuse</label>
-              <input
-                type="range"
-                id="slider-diffuse"
-                min="0.1"
-                max="1"
-                step="0.1"
-                value="0.5"
-              />
-              <span id="text-diffuse">0.5</span>
-            </div>
-
-            <div class="setting-item">
-              <label>Specular</label>
-              <input
-                type="range"
-                id="slider-specular"
-                min="0.1"
-                max="1"
-                step="0.1"
-                value="0.5"
-              />
-              <span id="text-specular">0.5</span>
-            </div>
-
-            <div class="setting-item">
-              <label>Shininess</label>
-              <input
-                type="range"
-                id="slider-shininess"
-                min="10"
-                max="100"
-                step="10"
-                value="60"
-              />
-              <span id="text-shininess">60</span>
-            </div>
-
-            <!-- Light Position -->
-            <div class="setting-item">
-              <label>Light X</label>
-              <input
-                type="range"
-                id="slider-light-x"
-                min="-1"
-                max="1"
-                step="0.1"
-                value="1"
-              />
-              <span id="text-light-x">1</span>
-            </div>
-
-            <div class="setting-item">
-              <label>Light Y</label>
-              <input
-                type="range"
-                id="slider-light-y"
-                min="-1"
-                max="1"
-                step="0.1"
-                value="1"
-              />
-              <span id="text-light-y">1</span>
-            </div>
-
-            <div class="setting-item">
-              <label>Light Z</label>
-              <input
-                type="range"
-                id="slider-light-z"
-                min="-1"
-                max="1"
-                step="0.1"
-                value="1"
-              />
-              <span id="text-light-z">1</span>
-            </div>
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="global">
+              Global Settings
+            </button>
           </div>
+          <div class="tab-content active" id="global-tab">
+            <div class="settings-grid">
+              <!-- Animation Speed -->
+              <div class="setting-item">
+                <label>Speed</label>
+                <input
+                  type="range"
+                  id="slider-speed"
+                  min="0.1"
+                  max="2.0"
+                  step="0.1"
+                  value="1.0"
+                />
+                <span id="text-speed">1.0</span>
+              </div>
 
-          <!-- Inside the global-controls div, after the existing light position controls -->
-          <div class="control-section">
-            <h4 class="control-section-header">Light Sources</h4>
+              <!-- Lighting Controls -->
+              <div class="setting-item">
+                <label>Ambient</label>
+                <input
+                  type="range"
+                  id="slider-ambient"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value="0.5"
+                />
+                <span id="text-ambient">0.5</span>
+              </div>
 
-            <!-- Light Source Selector -->
-            <div class="setting-item">
-              <label>Light Source</label>
-              <div class="light-source-selector">
-                <button class="light-btn active" data-light="point">
-                  Point Light
-                </button>
-                <button class="light-btn" data-light="spot">Spot Light</button>
+              <div class="setting-item">
+                <label>Diffuse</label>
+                <input
+                  type="range"
+                  id="slider-diffuse"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value="0.5"
+                />
+                <span id="text-diffuse">0.5</span>
+              </div>
+
+              <div class="setting-item">
+                <label>Specular</label>
+                <input
+                  type="range"
+                  id="slider-specular"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value="0.5"
+                />
+                <span id="text-specular">0.5</span>
+              </div>
+
+              <div class="setting-item">
+                <label>Shininess</label>
+                <input
+                  type="range"
+                  id="slider-shininess"
+                  min="10"
+                  max="100"
+                  step="10"
+                  value="60"
+                />
+                <span id="text-shininess">60</span>
+              </div>
+
+              <!-- Light Position -->
+              <div class="setting-item">
+                <label>Light X</label>
+                <input
+                  type="range"
+                  id="slider-light-x"
+                  min="-1"
+                  max="1"
+                  step="0.1"
+                  value="1"
+                />
+                <span id="text-light-x">1</span>
+              </div>
+
+              <div class="setting-item">
+                <label>Light Y</label>
+                <input
+                  type="range"
+                  id="slider-light-y"
+                  min="-1"
+                  max="1"
+                  step="0.1"
+                  value="1"
+                />
+                <span id="text-light-y">1</span>
+              </div>
+
+              <div class="setting-item">
+                <label>Light Z</label>
+                <input
+                  type="range"
+                  id="slider-light-z"
+                  min="-1"
+                  max="1"
+                  step="0.1"
+                  value="1"
+                />
+                <span id="text-light-z">1</span>
               </div>
             </div>
 
-            <!-- Light Color Controls -->
-            <div class="light-color-controls">
+            <!-- Inside the global-controls div, after the existing light position controls -->
+            <div class="control-section">
+              <h4 class="control-section-header">Light Sources</h4>
+
+              <!-- Light Source Selector -->
               <div class="setting-item">
-                <label>Light Ambient Color</label>
-                <input type="color" id="light-ambient-color" value="#808080" />
+                <label>Light Source</label>
+                <div class="light-source-selector">
+                  <button class="light-btn active" data-light="point">
+                    Point Light
+                  </button>
+                  <button class="light-btn" data-light="spot">
+                    Spot Light
+                  </button>
+                </div>
               </div>
 
-              <div class="setting-item">
-                <label>Light Diffuse Color</label>
-                <input type="color" id="light-diffuse-color" value="#FFFFFF" />
-              </div>
+              <!-- Light Color Controls -->
+              <div class="light-color-controls">
+                <div class="setting-item">
+                  <label>Light Ambient Color</label>
+                  <input
+                    type="color"
+                    id="light-ambient-color"
+                    value="#808080"
+                  />
+                </div>
 
-              <div class="setting-item">
-                <label>Light Specular Color</label>
-                <input type="color" id="light-specular-color" value="#FFFFFF" />
+                <div class="setting-item">
+                  <label>Light Diffuse Color</label>
+                  <input
+                    type="color"
+                    id="light-diffuse-color"
+                    value="#FFFFFF"
+                  />
+                </div>
+
+                <div class="setting-item">
+                  <label>Light Specular Color</label>
+                  <input
+                    type="color"
+                    id="light-specular-color"
+                    value="#FFFFFF"
+                  />
+                </div>
               </div>
             </div>
           </div>

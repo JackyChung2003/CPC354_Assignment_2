@@ -42,8 +42,8 @@ body {
 
 /* Canvas container in top right */
 .canvas-container {
-  height: 300px;
-  width: 100%;
+  width: 500px; /* Fixed width */
+  height: 300px; /* Fixed height */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -51,13 +51,15 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 10px;
+  margin-left: auto; /* Push to right side */
 }
 
 #gl-canvas {
-  width: auto;
+  width: 100%;
   height: 100%;
+  object-fit: contain; /* This preserves aspect ratio */
+  max-width: 500px;
   max-height: 300px;
-  object-fit: contain; /* Prevents stretching */
 }
 
 /* Bottom section with light and global controls */
@@ -195,36 +197,28 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive design */
+/* Responsive adjustments */
 @media (max-width: 1024px) {
-  .top-section {
-    grid-template-columns: 1fr; /* Stack vertically on smaller screens */
-  }
-
-  .controls-container {
-    grid-template-columns: 1fr;
-  }
-
   .canvas-container {
-    height: 250px; /* Slightly smaller on medium screens */
+    width: 400px;
+    height: 240px;
   }
 
   #gl-canvas {
-    max-height: 250px;
+    max-width: 400px;
+    max-height: 240px;
   }
 }
 
 @media (max-width: 768px) {
-  .controls-container {
-    grid-template-columns: 1fr;
-  }
-
   .canvas-container {
-    height: 200px; /* Even smaller on mobile */
+    width: 300px;
+    height: 180px;
   }
 
   #gl-canvas {
-    max-height: 200px;
+    max-width: 300px;
+    max-height: 180px;
   }
 }
 
@@ -331,11 +325,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* Add section headers */
 .control-section-header {
-  font-size: 12px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 8px;
-  padding: 4px 0;
+  display: none;
 }
 
 /* Tab styling */
@@ -488,4 +478,44 @@ input[type="range"]::-webkit-slider-thumb {
   .controls-container {
     grid-template-columns: 1fr;
   }
+}
+
+/* Update the global controls styling to match other containers */
+.control-panel.global-controls {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+/* Make all control panel headers consistent */
+.control-panel .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f0f0f0;
+  padding: 4px 4px 0;
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 0;
+}
+
+.control-panel .tab-btn {
+  padding: 6px 12px;
+  border: none;
+  background: #e0e0e0;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.2s ease;
+}
+
+.control-panel .tab-btn.active {
+  background: #ffffff;
+  font-weight: 500;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Adjust spacing for settings grid */
+.control-panel .settings-grid {
+  padding: 8px;
 }

@@ -508,6 +508,11 @@ function configWebGL() {
   gl = WebGLUtils.setupWebGL(canvas);
   if (!gl) alert("WebGL isn't available");
 
+  // Set canvas size with proper aspect ratio
+  const aspectRatio = 16 / 9; // or whatever ratio you want
+  canvas.width = 500; // match CSS width
+  canvas.height = canvas.width / aspectRatio;
+
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.enable(gl.DEPTH_TEST);
@@ -540,7 +545,8 @@ function configWebGL() {
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  projectionMatrix = ortho(-4, 4, -2.25, 2.25, -5, 5);
+  const aspect = canvas.width / canvas.height;
+  const projectionMatrix = ortho(-4 * aspect, 4 * aspect, -4, 4, -5, 5);
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
   // Set up lighting uniforms
