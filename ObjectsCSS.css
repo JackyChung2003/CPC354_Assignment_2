@@ -248,14 +248,15 @@ input[type="range"] {
   color: #ffa69e;
 }
 
+/* Remove or comment out these sphere-specific button styles */
 .sphere-controls .anim-btn {
-  background: #b5838d;
-  border-color: #ffddd2;
+  background: #007bff; /* Match other buttons */
+  border: none;
 }
 
 .sphere-controls .anim-btn:hover {
-  background: #ffddd2;
-  color: #6d6875;
+  background: #0056b3; /* Match other buttons hover state */
+  color: white;
 }
 
 /* Add these styles */
