@@ -71,6 +71,12 @@ var rotationSpeed = 0.5; // Adjust this value to change speed (smaller = slower,
 // Add this variable at the top with other variables
 var animationFrameId = null;
 
+// Add these variables at the top with other variables
+var cylinderColor, cubeColor, sphereColor;
+var cylinderMaterial = vec4(1.0, 0.0, 0.0, 1.0); // Red for cylinder
+var cubeMaterial = vec4(0.0, 1.0, 0.0, 1.0); // Green for cube
+var sphereMaterial = vec4(0.0, 0.0, 1.0, 1.0); // Blue for sphere
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -247,6 +253,30 @@ function getUIElement() {
     rotationSpeed = parseFloat(event.target.value);
     textSpeed.innerHTML = event.target.value;
   };
+
+  // Color controls
+  cylinderColor = document.getElementById("cylinder-color");
+  cubeColor = document.getElementById("cube-color");
+  sphereColor = document.getElementById("sphere-color");
+
+  // Color change event listeners
+  cylinderColor.onchange = function (event) {
+    const color = hexToRGB(event.target.value);
+    cylinderMaterial = vec4(color.r, color.g, color.b, 1.0);
+    recompute();
+  };
+
+  cubeColor.onchange = function (event) {
+    const color = hexToRGB(event.target.value);
+    cubeMaterial = vec4(color.r, color.g, color.b, 1.0);
+    recompute();
+  };
+
+  sphereColor.onchange = function (event) {
+    const color = hexToRGB(event.target.value);
+    sphereMaterial = vec4(color.r, color.g, color.b, 1.0);
+    recompute();
+  };
 }
 
 // Configure WebGL Settings
@@ -289,25 +319,14 @@ function render() {
   projectionMatrix = ortho(-4, 4, -2.25, 2.25, -5, 5);
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
-  ambientProduct = mult(lightAmbient, materialAmbient);
-  diffuseProduct = mult(lightDiffuse, materialDiffuse);
-  specularProduct = mult(lightSpecular, materialSpecular);
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "ambientProduct"),
-    flatten(ambientProduct)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "diffuseProduct"),
-    flatten(diffuseProduct)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "specularProduct"),
-    flatten(specularProduct)
-  );
+  // Set up lighting uniforms
   gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
   gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
 
-  animUpdate();
+  // Draw each object with its own material
+  drawCylinder();
+  drawCube();
+  drawSphere();
 }
 
 // Update the animation frame
@@ -332,6 +351,24 @@ function drawCylinder() {
   if (cylinderFlag) {
     cylinderTheta[cylinderAxis] += rotationSpeed;
   }
+
+  // Set material for cylinder
+  const cylinderAmbientProduct = mult(lightAmbient, cylinderMaterial);
+  const cylinderDiffuseProduct = mult(lightDiffuse, cylinderMaterial);
+  const cylinderSpecularProduct = mult(lightSpecular, materialSpecular);
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(cylinderAmbientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(cylinderDiffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(cylinderSpecularProduct)
+  );
 
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
@@ -360,6 +397,24 @@ function drawCube() {
     cubeTheta[cubeAxis] += rotationSpeed;
   }
 
+  // Set material for cube
+  const cubeAmbientProduct = mult(lightAmbient, cubeMaterial);
+  const cubeDiffuseProduct = mult(lightDiffuse, cubeMaterial);
+  const cubeSpecularProduct = mult(lightSpecular, materialSpecular);
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(cubeAmbientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(cubeDiffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(cubeSpecularProduct)
+  );
+
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0));
   modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[X_AXIS], [1, 0, 0]));
@@ -377,6 +432,24 @@ function drawSphere() {
   if (sphereFlag) {
     sphereTheta[sphereAxis] += rotationSpeed;
   }
+
+  // Set material for sphere
+  const sphereAmbientProduct = mult(lightAmbient, sphereMaterial);
+  const sphereDiffuseProduct = mult(lightDiffuse, sphereMaterial);
+  const sphereSpecularProduct = mult(lightSpecular, materialSpecular);
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(sphereAmbientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(sphereDiffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(sphereSpecularProduct)
+  );
 
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(2, 0, 0));
@@ -472,6 +545,14 @@ function recompute() {
 
   // Restart animation
   animationFrameId = requestAnimationFrame(animUpdate);
+}
+
+// Add this helper function to convert hex colors to RGB
+function hexToRGB(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  return { r, g, b };
 }
 
 /*-----------------------------------------------------------------------------------*/
