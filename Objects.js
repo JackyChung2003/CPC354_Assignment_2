@@ -191,6 +191,24 @@ class RenderLoop {
 let tabButtons;
 let tabContents;
 
+// Add to your variable declarations
+let currentLightSource = "point"; // 'point' or 'spot'
+let pointLight = {
+  ambient: vec4(0.5, 0.5, 0.5, 1.0),
+  diffuse: vec4(1.0, 1.0, 1.0, 1.0),
+  specular: vec4(1.0, 1.0, 1.0, 1.0),
+  position: vec4(1.0, 1.0, 1.0, 0.0),
+};
+
+let spotLight = {
+  ambient: vec4(0.5, 0.5, 0.5, 1.0),
+  diffuse: vec4(1.0, 1.0, 1.0, 1.0),
+  specular: vec4(1.0, 1.0, 1.0, 1.0),
+  position: vec4(1.0, 1.0, 1.0, 0.0),
+  direction: vec3(0.0, -1.0, 0.0),
+  cutoff: 30.0,
+};
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -433,6 +451,56 @@ function getUIElement() {
     sphereMaterial = vec4(color.r, color.g, color.b, 1.0);
     recompute();
   };
+
+  // Light source controls
+  const lightBtns = document.querySelectorAll(".light-btn");
+  const lightAmbientColor = document.getElementById("light-ambient-color");
+  const lightDiffuseColor = document.getElementById("light-diffuse-color");
+  const lightSpecularColor = document.getElementById("light-specular-color");
+
+  // Light source selection
+  lightBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      lightBtns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentLightSource = btn.dataset.light;
+      updateLightColors(); // Update color inputs to show current light source colors
+      debouncedRecompute();
+    });
+  });
+
+  // Light color controls
+  function hexToVec4(hex) {
+    const r = parseInt(hex.substr(1, 2), 16) / 255;
+    const g = parseInt(hex.substr(3, 2), 16) / 255;
+    const b = parseInt(hex.substr(5, 2), 16) / 255;
+    return vec4(r, g, b, 1.0);
+  }
+
+  function updateLightColors() {
+    const light = currentLightSource === "point" ? pointLight : spotLight;
+    lightAmbientColor.value = vec4ToHex(light.ambient);
+    lightDiffuseColor.value = vec4ToHex(light.diffuse);
+    lightSpecularColor.value = vec4ToHex(light.specular);
+  }
+
+  lightAmbientColor.addEventListener("input", (e) => {
+    const light = currentLightSource === "point" ? pointLight : spotLight;
+    light.ambient = hexToVec4(e.target.value);
+    debouncedRecompute();
+  });
+
+  lightDiffuseColor.addEventListener("input", (e) => {
+    const light = currentLightSource === "point" ? pointLight : spotLight;
+    light.diffuse = hexToVec4(e.target.value);
+    debouncedRecompute();
+  });
+
+  lightSpecularColor.addEventListener("input", (e) => {
+    const light = currentLightSource === "point" ? pointLight : spotLight;
+    light.specular = hexToVec4(e.target.value);
+    debouncedRecompute();
+  });
 }
 
 // Configure WebGL Settings

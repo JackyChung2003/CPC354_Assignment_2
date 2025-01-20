@@ -74,237 +74,477 @@
 
   <body>
     <div class="container">
-      <!-- Canvas for the graphic rendering -->
-      <div class="main-content">
-        <div class="canvas">
-          <canvas id="gl-canvas" width="700" height="400">
+      <!-- Top section with object controls and canvas -->
+      <div class="top-section">
+        <!-- Object Controls on left -->
+        <div class="control-panel object-controls">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="cylinder">Cylinder</button>
+            <button class="tab-btn" data-tab="cube">Cube</button>
+            <button class="tab-btn" data-tab="sphere">Sphere</button>
+          </div>
+
+          <!-- Cylinder Tab Content -->
+          <div class="tab-content active" id="cylinder-tab">
+            <div
+              class="rotation-controls"
+              role="group"
+              aria-label="Cylinder Controls"
+            >
+              <div class="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    id="cylinder-x"
+                    name="checkCylinder"
+                    checked
+                  />
+                  X-Axis
+                </label>
+                <label>
+                  <input type="radio" id="cylinder-y" name="checkCylinder" />
+                  Y-Axis
+                </label>
+                <label>
+                  <input type="radio" id="cylinder-z" name="checkCylinder" />
+                  Z-Axis
+                </label>
+              </div>
+              <button id="cylinder-btn" class="anim-btn">
+                Toggle Animation
+              </button>
+              <div class="color-controls">
+                <label>Color</label>
+                <input type="color" id="cylinder-color" value="#FF0000" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Cube Tab Content -->
+          <div class="tab-content" id="cube-tab">
+            <div
+              class="rotation-controls"
+              role="group"
+              aria-label="Cube Controls"
+            >
+              <div class="radio-group">
+                <label>
+                  <input type="radio" id="cube-x" name="checkCube" checked />
+                  X-Axis
+                </label>
+                <label>
+                  <input type="radio" id="cube-y" name="checkCube" />
+                  Y-Axis
+                </label>
+                <label>
+                  <input type="radio" id="cube-z" name="checkCube" />
+                  Z-Axis
+                </label>
+              </div>
+              <button id="cube-btn" class="anim-btn">Toggle Animation</button>
+              <div class="color-controls">
+                <label>Color</label>
+                <input type="color" id="cube-color" value="#00FF00" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Sphere Tab Content -->
+          <div class="tab-content" id="sphere-tab">
+            <div
+              class="rotation-controls"
+              role="group"
+              aria-label="Sphere Controls"
+            >
+              <div class="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    id="sphere-x"
+                    name="checkSphere"
+                    checked
+                  />
+                  X-Axis
+                </label>
+                <label>
+                  <input type="radio" id="sphere-y" name="checkSphere" />
+                  Y-Axis
+                </label>
+                <label>
+                  <input type="radio" id="sphere-z" name="checkSphere" />
+                  Z-Axis
+                </label>
+              </div>
+              <button id="sphere-btn" class="anim-btn">Toggle Animation</button>
+              <div class="color-controls">
+                <label>Color</label>
+                <input type="color" id="sphere-color" value="#0000FF" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas on right -->
+        <div class="canvas-container">
+          <canvas id="gl-canvas" width="700" height="300">
             Error: your browser doesn't support the HTML5 canvas element
           </canvas>
         </div>
+      </div>
 
-        <!-- Controls Container -->
-        <div class="controls-container">
-          <!-- Object Controls with Tabs -->
-          <div class="control-panel object-controls">
-            <div class="tabs">
-              <button class="tab-btn active" data-tab="cylinder">
-                Cylinder
-              </button>
-              <button class="tab-btn" data-tab="cube">Cube</button>
-              <button class="tab-btn" data-tab="sphere">Sphere</button>
-            </div>
+      <!-- Bottom section with light and global controls -->
+      <div class="controls-container">
+        <!-- Light Controls -->
+        <div class="control-panel light-controls">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="point-light">
+              Point Light
+            </button>
+            <button class="tab-btn" data-tab="spot-light">Spot Light</button>
+          </div>
 
-            <!-- Cylinder Tab Content -->
-            <div class="tab-content active" id="cylinder-tab">
-              <div
-                class="rotation-controls"
-                role="group"
-                aria-label="Cylinder Controls"
-              >
-                <div class="radio-group">
-                  <label>
+          <!-- Point Light Tab Content -->
+          <div class="tab-content active" id="point-light-tab">
+            <div class="control-section">
+              <h4 class="control-section-header">Point Light Properties</h4>
+              <div class="settings-grid">
+                <!-- Position Controls -->
+                <div class="setting-item">
+                  <label>Position X</label>
+                  <input
+                    type="range"
+                    id="point-light-x"
+                    min="-5"
+                    max="5"
+                    step="0.1"
+                    value="1"
+                  />
+                  <span id="text-point-x">1.0</span>
+                </div>
+                <div class="setting-item">
+                  <label>Position Y</label>
+                  <input
+                    type="range"
+                    id="point-light-y"
+                    min="-5"
+                    max="5"
+                    step="0.1"
+                    value="1"
+                  />
+                  <span id="text-point-y">1.0</span>
+                </div>
+                <div class="setting-item">
+                  <label>Position Z</label>
+                  <input
+                    type="range"
+                    id="point-light-z"
+                    min="-5"
+                    max="5"
+                    step="0.1"
+                    value="1"
+                  />
+                  <span id="text-point-z">1.0</span>
+                </div>
+
+                <!-- Color Controls -->
+                <div class="light-color-controls">
+                  <div class="setting-item">
+                    <label>Ambient Color</label>
                     <input
-                      type="radio"
-                      id="cylinder-x"
-                      name="checkCylinder"
-                      checked
+                      type="color"
+                      id="point-ambient-color"
+                      value="#808080"
                     />
-                    X-Axis
-                  </label>
-                  <label>
-                    <input type="radio" id="cylinder-y" name="checkCylinder" />
-                    Y-Axis
-                  </label>
-                  <label>
-                    <input type="radio" id="cylinder-z" name="checkCylinder" />
-                    Z-Axis
-                  </label>
-                </div>
-                <button id="cylinder-btn" class="anim-btn">
-                  Toggle Animation
-                </button>
-                <div class="color-controls">
-                  <label>Color</label>
-                  <input type="color" id="cylinder-color" value="#FF0000" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Cube Tab Content -->
-            <div class="tab-content" id="cube-tab">
-              <div
-                class="rotation-controls"
-                role="group"
-                aria-label="Cube Controls"
-              >
-                <div class="radio-group">
-                  <label>
-                    <input type="radio" id="cube-x" name="checkCube" checked />
-                    X-Axis
-                  </label>
-                  <label>
-                    <input type="radio" id="cube-y" name="checkCube" />
-                    Y-Axis
-                  </label>
-                  <label>
-                    <input type="radio" id="cube-z" name="checkCube" />
-                    Z-Axis
-                  </label>
-                </div>
-                <button id="cube-btn" class="anim-btn">Toggle Animation</button>
-                <div class="color-controls">
-                  <label>Color</label>
-                  <input type="color" id="cube-color" value="#00FF00" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Sphere Tab Content -->
-            <div class="tab-content" id="sphere-tab">
-              <div
-                class="rotation-controls"
-                role="group"
-                aria-label="Sphere Controls"
-              >
-                <div class="radio-group">
-                  <label>
+                  </div>
+                  <div class="setting-item">
+                    <label>Diffuse Color</label>
                     <input
-                      type="radio"
-                      id="sphere-x"
-                      name="checkSphere"
-                      checked
+                      type="color"
+                      id="point-diffuse-color"
+                      value="#FFFFFF"
                     />
-                    X-Axis
-                  </label>
-                  <label>
-                    <input type="radio" id="sphere-y" name="checkSphere" />
-                    Y-Axis
-                  </label>
-                  <label>
-                    <input type="radio" id="sphere-z" name="checkSphere" />
-                    Z-Axis
-                  </label>
-                </div>
-                <button id="sphere-btn" class="anim-btn">
-                  Toggle Animation
-                </button>
-                <div class="color-controls">
-                  <label>Color</label>
-                  <input type="color" id="sphere-color" value="#0000FF" />
+                  </div>
+                  <div class="setting-item">
+                    <label>Specular Color</label>
+                    <input
+                      type="color"
+                      id="point-specular-color"
+                      value="#FFFFFF"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Global Controls -->
-          <div class="control-panel global-controls">
-            <h3>Global Settings</h3>
-            <div class="settings-grid">
-              <!-- Animation Speed -->
+          <!-- Spot Light Tab Content -->
+          <div class="tab-content" id="spot-light-tab">
+            <div class="control-section">
+              <h4 class="control-section-header">Spot Light Properties</h4>
+              <div class="settings-grid">
+                <!-- Position Controls -->
+                <div class="setting-item">
+                  <label>Position X</label>
+                  <input
+                    type="range"
+                    id="spot-light-x"
+                    min="-5"
+                    max="5"
+                    step="0.1"
+                    value="1"
+                  />
+                  <span id="text-spot-x">1.0</span>
+                </div>
+                <div class="setting-item">
+                  <label>Position Y</label>
+                  <input
+                    type="range"
+                    id="spot-light-y"
+                    min="-5"
+                    max="5"
+                    step="0.1"
+                    value="1"
+                  />
+                  <span id="text-spot-y">1.0</span>
+                </div>
+                <div class="setting-item">
+                  <label>Position Z</label>
+                  <input
+                    type="range"
+                    id="spot-light-z"
+                    min="-5"
+                    max="5"
+                    step="0.1"
+                    value="1"
+                  />
+                  <span id="text-spot-z">1.0</span>
+                </div>
+
+                <!-- Direction Controls -->
+                <div class="setting-item">
+                  <label>Direction X</label>
+                  <input
+                    type="range"
+                    id="spot-dir-x"
+                    min="-1"
+                    max="1"
+                    step="0.1"
+                    value="0"
+                  />
+                  <span id="text-spot-dir-x">0.0</span>
+                </div>
+                <div class="setting-item">
+                  <label>Direction Y</label>
+                  <input
+                    type="range"
+                    id="spot-dir-y"
+                    min="-1"
+                    max="1"
+                    step="0.1"
+                    value="-1"
+                  />
+                  <span id="text-spot-dir-y">-1.0</span>
+                </div>
+                <div class="setting-item">
+                  <label>Direction Z</label>
+                  <input
+                    type="range"
+                    id="spot-dir-z"
+                    min="-1"
+                    max="1"
+                    step="0.1"
+                    value="0"
+                  />
+                  <span id="text-spot-dir-z">0.0</span>
+                </div>
+
+                <!-- Cutoff Angle -->
+                <div class="setting-item">
+                  <label>Cutoff Angle</label>
+                  <input
+                    type="range"
+                    id="spot-cutoff"
+                    min="0"
+                    max="90"
+                    step="1"
+                    value="30"
+                  />
+                  <span id="text-spot-cutoff">30°</span>
+                </div>
+
+                <!-- Color Controls -->
+                <div class="light-color-controls">
+                  <div class="setting-item">
+                    <label>Ambient Color</label>
+                    <input
+                      type="color"
+                      id="spot-ambient-color"
+                      value="#808080"
+                    />
+                  </div>
+                  <div class="setting-item">
+                    <label>Diffuse Color</label>
+                    <input
+                      type="color"
+                      id="spot-diffuse-color"
+                      value="#FFFFFF"
+                    />
+                  </div>
+                  <div class="setting-item">
+                    <label>Specular Color</label>
+                    <input
+                      type="color"
+                      id="spot-specular-color"
+                      value="#FFFFFF"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global Controls -->
+        <div class="control-panel global-controls">
+          <div class="settings-grid">
+            <!-- Animation Speed -->
+            <div class="setting-item">
+              <label>Speed</label>
+              <input
+                type="range"
+                id="slider-speed"
+                min="0.1"
+                max="2.0"
+                step="0.1"
+                value="1.0"
+              />
+              <span id="text-speed">1.0</span>
+            </div>
+
+            <!-- Lighting Controls -->
+            <div class="setting-item">
+              <label>Ambient</label>
+              <input
+                type="range"
+                id="slider-ambient"
+                min="0.1"
+                max="1"
+                step="0.1"
+                value="0.5"
+              />
+              <span id="text-ambient">0.5</span>
+            </div>
+
+            <div class="setting-item">
+              <label>Diffuse</label>
+              <input
+                type="range"
+                id="slider-diffuse"
+                min="0.1"
+                max="1"
+                step="0.1"
+                value="0.5"
+              />
+              <span id="text-diffuse">0.5</span>
+            </div>
+
+            <div class="setting-item">
+              <label>Specular</label>
+              <input
+                type="range"
+                id="slider-specular"
+                min="0.1"
+                max="1"
+                step="0.1"
+                value="0.5"
+              />
+              <span id="text-specular">0.5</span>
+            </div>
+
+            <div class="setting-item">
+              <label>Shininess</label>
+              <input
+                type="range"
+                id="slider-shininess"
+                min="10"
+                max="100"
+                step="10"
+                value="60"
+              />
+              <span id="text-shininess">60</span>
+            </div>
+
+            <!-- Light Position -->
+            <div class="setting-item">
+              <label>Light X</label>
+              <input
+                type="range"
+                id="slider-light-x"
+                min="-1"
+                max="1"
+                step="0.1"
+                value="1"
+              />
+              <span id="text-light-x">1</span>
+            </div>
+
+            <div class="setting-item">
+              <label>Light Y</label>
+              <input
+                type="range"
+                id="slider-light-y"
+                min="-1"
+                max="1"
+                step="0.1"
+                value="1"
+              />
+              <span id="text-light-y">1</span>
+            </div>
+
+            <div class="setting-item">
+              <label>Light Z</label>
+              <input
+                type="range"
+                id="slider-light-z"
+                min="-1"
+                max="1"
+                step="0.1"
+                value="1"
+              />
+              <span id="text-light-z">1</span>
+            </div>
+          </div>
+
+          <!-- Inside the global-controls div, after the existing light position controls -->
+          <div class="control-section">
+            <h4 class="control-section-header">Light Sources</h4>
+
+            <!-- Light Source Selector -->
+            <div class="setting-item">
+              <label>Light Source</label>
+              <div class="light-source-selector">
+                <button class="light-btn active" data-light="point">
+                  Point Light
+                </button>
+                <button class="light-btn" data-light="spot">Spot Light</button>
+              </div>
+            </div>
+
+            <!-- Light Color Controls -->
+            <div class="light-color-controls">
               <div class="setting-item">
-                <label>Speed</label>
-                <input
-                  type="range"
-                  id="slider-speed"
-                  min="0.1"
-                  max="2.0"
-                  step="0.1"
-                  value="1.0"
-                />
-                <span id="text-speed">1.0</span>
+                <label>Light Ambient Color</label>
+                <input type="color" id="light-ambient-color" value="#808080" />
               </div>
 
-              <!-- Lighting Controls -->
               <div class="setting-item">
-                <label>Ambient</label>
-                <input
-                  type="range"
-                  id="slider-ambient"
-                  min="0.1"
-                  max="1"
-                  step="0.1"
-                  value="0.5"
-                />
-                <span id="text-ambient">0.5</span>
+                <label>Light Diffuse Color</label>
+                <input type="color" id="light-diffuse-color" value="#FFFFFF" />
               </div>
 
               <div class="setting-item">
-                <label>Diffuse</label>
-                <input
-                  type="range"
-                  id="slider-diffuse"
-                  min="0.1"
-                  max="1"
-                  step="0.1"
-                  value="0.5"
-                />
-                <span id="text-diffuse">0.5</span>
-              </div>
-
-              <div class="setting-item">
-                <label>Specular</label>
-                <input
-                  type="range"
-                  id="slider-specular"
-                  min="0.1"
-                  max="1"
-                  step="0.1"
-                  value="0.5"
-                />
-                <span id="text-specular">0.5</span>
-              </div>
-
-              <div class="setting-item">
-                <label>Shininess</label>
-                <input
-                  type="range"
-                  id="slider-shininess"
-                  min="10"
-                  max="100"
-                  step="10"
-                  value="60"
-                />
-                <span id="text-shininess">60</span>
-              </div>
-
-              <!-- Light Position -->
-              <div class="setting-item">
-                <label>Light X</label>
-                <input
-                  type="range"
-                  id="slider-light-x"
-                  min="-1"
-                  max="1"
-                  step="0.1"
-                  value="1"
-                />
-                <span id="text-light-x">1</span>
-              </div>
-
-              <div class="setting-item">
-                <label>Light Y</label>
-                <input
-                  type="range"
-                  id="slider-light-y"
-                  min="-1"
-                  max="1"
-                  step="0.1"
-                  value="1"
-                />
-                <span id="text-light-y">1</span>
-              </div>
-
-              <div class="setting-item">
-                <label>Light Z</label>
-                <input
-                  type="range"
-                  id="slider-light-z"
-                  min="-1"
-                  max="1"
-                  step="0.1"
-                  value="1"
-                />
-                <span id="text-light-z">1</span>
+                <label>Light Specular Color</label>
+                <input type="color" id="light-specular-color" value="#FFFFFF" />
               </div>
             </div>
           </div>
