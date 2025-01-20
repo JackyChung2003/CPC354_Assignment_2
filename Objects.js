@@ -244,25 +244,28 @@ window.onload = function init() {
   configWebGL();
   render();
 
-  // Initialize tabs
-  tabButtons = document.querySelectorAll(".tab-btn");
-  tabContents = document.querySelectorAll(".tab-content");
+  // Initialize tabs for each container separately
+  const containers = document.querySelectorAll(".control-panel");
+  containers.forEach((container) => {
+    const buttons = container.querySelectorAll(".tab-btn");
+    const contents = container.querySelectorAll(".tab-content");
 
-  tabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      // Remove active class from all buttons and contents
-      tabButtons.forEach((btn) => btn.classList.remove("active"));
-      tabContents.forEach((content) => content.classList.remove("active"));
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        // Remove active class only from buttons within this container
+        buttons.forEach((btn) => btn.classList.remove("active"));
+        contents.forEach((content) => content.classList.remove("active"));
 
-      // Add active class to clicked button
-      button.classList.add("active");
+        // Add active class to clicked button
+        button.classList.add("active");
 
-      // Show corresponding content
-      const tabId = `${button.getAttribute("data-tab")}-tab`;
-      const tabContent = document.getElementById(tabId);
-      if (tabContent) {
-        tabContent.classList.add("active");
-      }
+        // Show corresponding content within this container
+        const tabId = `${button.getAttribute("data-tab")}-tab`;
+        const tabContent = container.querySelector(`#${tabId}`);
+        if (tabContent) {
+          tabContent.classList.add("active");
+        }
+      });
     });
   });
 };

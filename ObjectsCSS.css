@@ -95,6 +95,7 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .control-panel h3 {
@@ -329,7 +330,11 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* Tab styling */
-.tabs {
+.control-panel {
+  position: relative;
+}
+
+.control-panel .tabs {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -338,48 +343,26 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 4px 4px 0 0;
 }
 
-.tab-btn {
-  padding: 6px 12px;
-  border: none;
-  background: #e0e0e0;
-  cursor: pointer;
-  font-size: 12px;
-  border-radius: 4px 4px 0 0;
-  transition: all 0.2s ease;
-}
-
-.tab-btn:hover {
-  background: #d0d0d0;
-}
-
-.tab-btn.active {
-  background: #ffffff;
-  font-weight: 500;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Tab content scrolling */
-.tab-content {
+.control-panel .tab-content {
   display: none;
   padding: 8px;
-  background: #ffffff;
-  border-radius: 0 0 4px 4px;
-  overflow-y: auto; /* Add scrolling to tab content */
-  max-height: calc(100% - 40px); /* Account for tab header height */
 }
 
-.tab-content.active {
+.control-panel .tab-content.active {
   display: block;
-  animation: fadeIn 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+/* Ensure each container's tabs work independently */
+.control-panel.object-controls .tab-content,
+.control-panel.light-controls .tab-content,
+.control-panel.global-controls .tab-content {
+  display: none;
+}
+
+.control-panel.object-controls .tab-content.active,
+.control-panel.light-controls .tab-content.active,
+.control-panel.global-controls .tab-content.active {
+  display: block;
 }
 
 /* Light source controls styling */
