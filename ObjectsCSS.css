@@ -55,7 +55,7 @@ body {
   flex: 1 1 auto;
   min-height: 0; /* Important for flex overflow */
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 10px;
   padding: 10px;
   background: #f8f9fa;
@@ -309,4 +309,60 @@ input[type="range"]::-webkit-slider-thumb {
   padding: 10px 0;
   border-bottom: 2px solid #007bff;
   margin-bottom: 15px;
+}
+
+/* Tab styling */
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: #f0f0f0;
+  padding: 5px 5px 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: #e0e0e0;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: #d0d0d0;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  font-weight: 500;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content {
+  display: none;
+  padding: 15px;
+  background: #ffffff;
+  border-radius: 0 0 4px 4px;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Update control panel layout */
+.control-panel.object-controls {
+  padding: 0;
+  overflow: visible;
 }

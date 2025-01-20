@@ -84,123 +84,115 @@
 
         <!-- Controls Container -->
         <div class="controls-container">
-          <!-- Cylinder Controls -->
-          <div
-            class="control-panel cylinder-controls"
-            role="region"
-            aria-label="Cylinder Controls"
-          >
-            <h3 id="cylinder-header">Cylinder Controls</h3>
-            <div
-              class="rotation-controls"
-              role="group"
-              aria-labelledby="cylinder-header"
-            >
-              <div class="radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    id="cylinder-x"
-                    name="checkCylinder"
-                    checked
-                    aria-label="Rotate on X-Axis"
-                  />
-                  X-Axis
-                </label>
-                <label
-                  ><input
-                    type="radio"
-                    id="cylinder-y"
-                    name="checkCylinder"
-                  />Y-Axis</label
-                >
-                <label
-                  ><input
-                    type="radio"
-                    id="cylinder-z"
-                    name="checkCylinder"
-                  />Z-Axis</label
-                >
-              </div>
-              <button id="cylinder-btn" class="anim-btn">
-                Toggle Animation
+          <!-- Object Controls with Tabs -->
+          <div class="control-panel object-controls">
+            <div class="tabs">
+              <button class="tab-btn active" data-tab="cylinder">
+                Cylinder
               </button>
+              <button class="tab-btn" data-tab="cube">Cube</button>
+              <button class="tab-btn" data-tab="sphere">Sphere</button>
             </div>
-            <div class="color-controls">
-              <label>Color</label>
-              <input type="color" id="cylinder-color" value="#FF0000" />
-            </div>
-          </div>
 
-          <!-- Cube Controls -->
-          <div class="control-panel cube-controls">
-            <h3>Cube Controls</h3>
-            <div class="rotation-controls">
-              <div class="radio-group">
-                <label
-                  ><input
-                    type="radio"
-                    id="cube-x"
-                    name="checkCube"
-                    checked
-                  />X-Axis</label
-                >
-                <label
-                  ><input
-                    type="radio"
-                    id="cube-y"
-                    name="checkCube"
-                  />Y-Axis</label
-                >
-                <label
-                  ><input
-                    type="radio"
-                    id="cube-z"
-                    name="checkCube"
-                  />Z-Axis</label
-                >
+            <!-- Cylinder Tab Content -->
+            <div class="tab-content active" id="cylinder-tab">
+              <div
+                class="rotation-controls"
+                role="group"
+                aria-label="Cylinder Controls"
+              >
+                <div class="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      id="cylinder-x"
+                      name="checkCylinder"
+                      checked
+                    />
+                    X-Axis
+                  </label>
+                  <label>
+                    <input type="radio" id="cylinder-y" name="checkCylinder" />
+                    Y-Axis
+                  </label>
+                  <label>
+                    <input type="radio" id="cylinder-z" name="checkCylinder" />
+                    Z-Axis
+                  </label>
+                </div>
+                <button id="cylinder-btn" class="anim-btn">
+                  Toggle Animation
+                </button>
+                <div class="color-controls">
+                  <label>Color</label>
+                  <input type="color" id="cylinder-color" value="#FF0000" />
+                </div>
               </div>
-              <button id="cube-btn" class="anim-btn">Toggle Animation</button>
             </div>
-            <div class="color-controls">
-              <label>Color</label>
-              <input type="color" id="cube-color" value="#00FF00" />
-            </div>
-          </div>
 
-          <!-- Sphere Controls -->
-          <div class="control-panel sphere-controls">
-            <h3>Sphere Controls</h3>
-            <div class="rotation-controls">
-              <div class="radio-group">
-                <label
-                  ><input
-                    type="radio"
-                    id="sphere-x"
-                    name="checkSphere"
-                    checked
-                  />X-Axis</label
-                >
-                <label
-                  ><input
-                    type="radio"
-                    id="sphere-y"
-                    name="checkSphere"
-                  />Y-Axis</label
-                >
-                <label
-                  ><input
-                    type="radio"
-                    id="sphere-z"
-                    name="checkSphere"
-                  />Z-Axis</label
-                >
+            <!-- Cube Tab Content -->
+            <div class="tab-content" id="cube-tab">
+              <div
+                class="rotation-controls"
+                role="group"
+                aria-label="Cube Controls"
+              >
+                <div class="radio-group">
+                  <label>
+                    <input type="radio" id="cube-x" name="checkCube" checked />
+                    X-Axis
+                  </label>
+                  <label>
+                    <input type="radio" id="cube-y" name="checkCube" />
+                    Y-Axis
+                  </label>
+                  <label>
+                    <input type="radio" id="cube-z" name="checkCube" />
+                    Z-Axis
+                  </label>
+                </div>
+                <button id="cube-btn" class="anim-btn">Toggle Animation</button>
+                <div class="color-controls">
+                  <label>Color</label>
+                  <input type="color" id="cube-color" value="#00FF00" />
+                </div>
               </div>
-              <button id="sphere-btn" class="anim-btn">Toggle Animation</button>
             </div>
-            <div class="color-controls">
-              <label>Color</label>
-              <input type="color" id="sphere-color" value="#0000FF" />
+
+            <!-- Sphere Tab Content -->
+            <div class="tab-content" id="sphere-tab">
+              <div
+                class="rotation-controls"
+                role="group"
+                aria-label="Sphere Controls"
+              >
+                <div class="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      id="sphere-x"
+                      name="checkSphere"
+                      checked
+                    />
+                    X-Axis
+                  </label>
+                  <label>
+                    <input type="radio" id="sphere-y" name="checkSphere" />
+                    Y-Axis
+                  </label>
+                  <label>
+                    <input type="radio" id="sphere-z" name="checkSphere" />
+                    Z-Axis
+                  </label>
+                </div>
+                <button id="sphere-btn" class="anim-btn">
+                  Toggle Animation
+                </button>
+                <div class="color-controls">
+                  <label>Color</label>
+                  <input type="color" id="sphere-color" value="#0000FF" />
+                </div>
+              </div>
             </div>
           </div>
 

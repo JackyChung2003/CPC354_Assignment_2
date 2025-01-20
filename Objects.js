@@ -187,6 +187,10 @@ class RenderLoop {
   }
 }
 
+// Add this near the top of your file with other initialization code
+let tabButtons;
+let tabContents;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -221,6 +225,53 @@ window.onload = function init() {
   getUIElement();
   configWebGL();
   render();
+
+  // Initialize tabs
+  tabButtons = document.querySelectorAll(".tab-btn");
+  tabContents = document.querySelectorAll(".tab-content");
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      // Remove active class from all buttons and contents
+      tabButtons.forEach((btn) => btn.classList.remove("active"));
+      tabContents.forEach((content) => content.classList.remove("active"));
+
+      // Add active class to clicked button
+      button.classList.add("active");
+
+      // Show corresponding content
+      const tabId = `${button.getAttribute("data-tab")}-tab`;
+      const tabContent = document.getElementById(tabId);
+      if (tabContent) {
+        tabContent.classList.add("active");
+      }
+    });
+  });
+
+  // Add this after your existing variable declarations
+  function initializeTabs() {
+    const tabs = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        // Remove active class from all tabs and contents
+        tabs.forEach((t) => t.classList.remove("active"));
+        contents.forEach((c) => c.classList.remove("active"));
+
+        // Add active class to clicked tab and corresponding content
+        tab.classList.add("active");
+        const tabId = `${tab.dataset.tab}-tab`;
+        document.getElementById(tabId).classList.add("active");
+      });
+    });
+  }
+
+  // Add this to your window.onload or init function
+  window.addEventListener("load", () => {
+    initializeTabs();
+    // ... rest of your initialization code
+  });
 };
 
 // Retrieve all elements from HTML and store in the corresponding variables
