@@ -68,6 +68,9 @@ var textLightX, textLightY, textLightZ;
 // Add a speed variable at the top with other variables
 var rotationSpeed = 0.5; // Adjust this value to change speed (smaller = slower, larger = faster)
 
+// Add this variable at the top with other variables
+var animationFrameId = null;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -309,12 +312,19 @@ function render() {
 
 // Update the animation frame
 function animUpdate() {
+  // Cancel any existing animation frame before requesting a new one
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+  }
+
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   drawCylinder();
   drawCube();
   drawSphere();
   // drawWall();  // Comment this line out to test
-  window.requestAnimationFrame(animUpdate);
+
+  // Store the animation frame ID
+  animationFrameId = requestAnimationFrame(animUpdate);
 }
 
 // Draw functions for Cylinder, Cube, and Sphere
@@ -409,8 +419,21 @@ function concatData(point, normal) {
   normalsArray = normalsArray.concat(normal);
 }
 
-// Add this recompute function before the animUpdate function
+// Modify the recompute function
 function recompute() {
+  // Cancel any existing animation frame
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+
+  // Store current rotation states
+  const savedCylinderTheta = [...cylinderTheta];
+  const savedCubeTheta = [...cubeTheta];
+  const savedSphereTheta = [...sphereTheta];
+  const savedRotationSpeed = rotationSpeed;
+
+  // Reset arrays
   pointsArray = [];
   normalsArray = [];
 
@@ -438,8 +461,17 @@ function recompute() {
   wallV = wallObj.Point.length;
   totalV = pointsArray.length;
 
+  // Restore rotation states
+  cylinderTheta = [...savedCylinderTheta];
+  cubeTheta = [...savedCubeTheta];
+  sphereTheta = [...savedSphereTheta];
+  rotationSpeed = savedRotationSpeed;
+
   configWebGL();
   render();
+
+  // Restart animation
+  animationFrameId = requestAnimationFrame(animUpdate);
 }
 
 /*-----------------------------------------------------------------------------------*/
