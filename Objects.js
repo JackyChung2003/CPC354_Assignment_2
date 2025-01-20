@@ -145,8 +145,12 @@ function getUIElement() {
   cylinderZ.onchange = () => {
     if (cylinderZ.checked) cylinderAxis = Z_AXIS;
   };
-  cylinderBtn.onclick = () => {
+  cylinderBtn.onclick = function () {
     cylinderFlag = !cylinderFlag;
+    // Start animation if it's not running
+    if (cylinderFlag && animationFrameId === null) {
+      animationFrameId = requestAnimationFrame(animUpdate);
+    }
   };
 
   // Event listeners for Cube
@@ -159,8 +163,12 @@ function getUIElement() {
   cubeZ.onchange = () => {
     if (cubeZ.checked) cubeAxis = Z_AXIS;
   };
-  cubeBtn.onclick = () => {
+  cubeBtn.onclick = function () {
     cubeFlag = !cubeFlag;
+    // Start animation if it's not running
+    if (cubeFlag && animationFrameId === null) {
+      animationFrameId = requestAnimationFrame(animUpdate);
+    }
   };
 
   // Event listeners for Sphere
@@ -173,8 +181,12 @@ function getUIElement() {
   sphereZ.onchange = () => {
     if (sphereZ.checked) sphereAxis = Z_AXIS;
   };
-  sphereBtn.onclick = () => {
+  sphereBtn.onclick = function () {
     sphereFlag = !sphereFlag;
+    // Start animation if it's not running
+    if (sphereFlag && animationFrameId === null) {
+      animationFrameId = requestAnimationFrame(animUpdate);
+    }
   };
 
   // Add these to getUIElement() function after the sphere controls
@@ -331,19 +343,17 @@ function render() {
 
 // Update the animation frame
 function animUpdate() {
-  // Cancel any existing animation frame before requesting a new one
-  if (animationFrameId !== null) {
-    cancelAnimationFrame(animationFrameId);
-  }
-
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   drawCylinder();
   drawCube();
   drawSphere();
-  // drawWall();  // Comment this line out to test
 
-  // Store the animation frame ID
-  animationFrameId = requestAnimationFrame(animUpdate);
+  // Only continue animation if at least one object is rotating
+  if (cylinderFlag || cubeFlag || sphereFlag) {
+    animationFrameId = requestAnimationFrame(animUpdate);
+  } else {
+    animationFrameId = null;
+  }
 }
 
 // Draw functions for Cylinder, Cube, and Sphere
