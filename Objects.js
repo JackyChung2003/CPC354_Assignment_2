@@ -77,6 +77,116 @@ var cylinderMaterial = vec4(1.0, 0.0, 0.0, 1.0); // Red for cylinder
 var cubeMaterial = vec4(0.0, 1.0, 0.0, 1.0); // Green for cube
 var sphereMaterial = vec4(0.0, 0.0, 1.0, 1.0); // Blue for sphere
 
+// Group related variables
+const CONSTANTS = {
+  AXES: {
+    X: 0,
+    Y: 1,
+    Z: 2,
+  },
+  DEFAULTS: {
+    ROTATION_SPEED: 0.5,
+    AMBIENT: 0.5,
+    DIFFUSE: 0.5,
+    SPECULAR: 0.5,
+    SHININESS: 60,
+  },
+};
+
+// Create a state management object
+const State = {
+  animation: {
+    cylinder: false,
+    cube: false,
+    sphere: false,
+    frameId: null,
+  },
+  materials: {
+    cylinder: vec4(1.0, 0.0, 0.0, 1.0),
+    cube: vec4(0.0, 1.0, 0.0, 1.0),
+    sphere: vec4(0.0, 0.0, 1.0, 1.0),
+  },
+  rotation: {
+    cylinder: [0, 0, 0],
+    cube: [0, 0, 0],
+    sphere: [0, 0, 0],
+  },
+};
+
+// Create a UI controller class
+class UIController {
+  constructor() {
+    this.initializeElements();
+    this.setupEventListeners();
+  }
+
+  initializeElements() {
+    // Get all UI elements
+  }
+
+  setupEventListeners() {
+    // Setup all event listeners
+  }
+
+  updateRotationAxis(object, axis) {
+    // Handle rotation axis changes
+  }
+
+  toggleAnimation(object) {
+    // Handle animation toggles
+  }
+}
+
+// Create an Animation controller
+class AnimationController {
+  constructor(state) {
+    this.state = state;
+    this.frameId = null;
+  }
+
+  start() {
+    if (!this.frameId) {
+      this.animate();
+    }
+  }
+
+  stop() {
+    if (this.frameId) {
+      cancelAnimationFrame(this.frameId);
+      this.frameId = null;
+    }
+  }
+
+  animate() {
+    // Handle animation frame updates
+  }
+}
+
+// Use RequestAnimationFrame more efficiently
+class RenderLoop {
+  constructor() {
+    this.lastTime = 0;
+    this.deltaTime = 0;
+    this.fps = 60;
+    this.frameInterval = 1000 / this.fps;
+  }
+
+  start(callback) {
+    const animate = (currentTime) => {
+      this.deltaTime = currentTime - this.lastTime;
+
+      if (this.deltaTime > this.frameInterval) {
+        this.lastTime = currentTime - (this.deltaTime % this.frameInterval);
+        callback(this.deltaTime);
+      }
+
+      requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+  }
+}
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -206,46 +316,46 @@ function getUIElement() {
   textLightZ = document.getElementById("text-light-z");
 
   // Add these event listeners after the sphere event listeners
-  sliderAmbient.onchange = function (event) {
+  sliderAmbient.oninput = function (event) {
     ambient = event.target.value;
     textAmbient.innerHTML = ambient;
     lightAmbient = vec4(ambient, ambient, ambient, 1.0);
     recompute();
   };
 
-  sliderDiffuse.onchange = function (event) {
+  sliderDiffuse.oninput = function (event) {
     diffuse = event.target.value;
     textDiffuse.innerHTML = diffuse;
     lightDiffuse = vec4(diffuse, diffuse, diffuse, 1.0);
     recompute();
   };
 
-  sliderSpecular.onchange = function (event) {
+  sliderSpecular.oninput = function (event) {
     specular = event.target.value;
     textSpecular.innerHTML = specular;
     lightSpecular = vec4(specular, specular, specular, 1.0);
     recompute();
   };
 
-  sliderShininess.onchange = function (event) {
+  sliderShininess.oninput = function (event) {
     shininess = event.target.value;
     textShininess.innerHTML = shininess;
     recompute();
   };
 
-  sliderLightX.onchange = function (event) {
+  sliderLightX.oninput = function (event) {
     lightPos[0] = event.target.value;
     textLightX.innerHTML = lightPos[0].toFixed(1);
     recompute();
   };
 
-  sliderLightY.onchange = function (event) {
+  sliderLightY.oninput = function (event) {
     lightPos[1] = event.target.value;
     textLightY.innerHTML = lightPos[1].toFixed(1);
     recompute();
   };
 
-  sliderLightZ.onchange = function (event) {
+  sliderLightZ.oninput = function (event) {
     lightPos[2] = event.target.value;
     textLightZ.innerHTML = lightPos[2].toFixed(1);
     recompute();
@@ -255,16 +365,24 @@ function getUIElement() {
   var sliderSpeed = document.getElementById("slider-speed");
   var textSpeed = document.getElementById("text-speed");
 
-  // Add both 'input' and 'change' event listeners for real-time updates
-  sliderSpeed.oninput = function (event) {
-    rotationSpeed = parseFloat(event.target.value);
-    textSpeed.innerHTML = event.target.value;
-  };
+  // Add debouncing for slider events
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
 
-  sliderSpeed.onchange = function (event) {
+  // Use for slider events
+  sliderSpeed.oninput = debounce((event) => {
     rotationSpeed = parseFloat(event.target.value);
     textSpeed.innerHTML = event.target.value;
-  };
+  }, 16);
 
   // Color controls
   cylinderColor = document.getElementById("cylinder-color");
@@ -564,5 +682,80 @@ function hexToRGB(hex) {
   const b = parseInt(hex.slice(5, 7), 16) / 255;
   return { r, g, b };
 }
+
+// Add debouncing for WebGL updates
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Debounced recompute function
+const debouncedRecompute = debounce(() => {
+  recompute();
+}, 16); // 60fps
+
+// Update global settings event listeners
+sliderAmbient.oninput = function (event) {
+  // Instant UI update
+  ambient = event.target.value;
+  textAmbient.innerHTML = ambient;
+
+  // Debounced WebGL update
+  lightAmbient = vec4(ambient, ambient, ambient, 1.0);
+  debouncedRecompute();
+};
+
+sliderDiffuse.oninput = function (event) {
+  diffuse = event.target.value;
+  textDiffuse.innerHTML = diffuse;
+
+  lightDiffuse = vec4(diffuse, diffuse, diffuse, 1.0);
+  debouncedRecompute();
+};
+
+sliderSpecular.oninput = function (event) {
+  specular = event.target.value;
+  textSpecular.innerHTML = specular;
+
+  lightSpecular = vec4(specular, specular, specular, 1.0);
+  debouncedRecompute();
+};
+
+sliderShininess.oninput = function (event) {
+  shininess = event.target.value;
+  textShininess.innerHTML = shininess;
+  debouncedRecompute();
+};
+
+sliderLightX.oninput = function (event) {
+  lightPos[0] = event.target.value;
+  textLightX.innerHTML = lightPos[0].toFixed(1);
+  debouncedRecompute();
+};
+
+sliderLightY.oninput = function (event) {
+  lightPos[1] = event.target.value;
+  textLightY.innerHTML = lightPos[1].toFixed(1);
+  debouncedRecompute();
+};
+
+sliderLightZ.oninput = function (event) {
+  lightPos[2] = event.target.value;
+  textLightZ.innerHTML = lightPos[2].toFixed(1);
+  debouncedRecompute();
+};
+
+sliderSpeed.oninput = function (event) {
+  rotationSpeed = parseFloat(event.target.value);
+  textSpeed.innerHTML = event.target.value;
+  // No need to recompute for speed changes
+};
 
 /*-----------------------------------------------------------------------------------*/

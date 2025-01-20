@@ -85,18 +85,28 @@
         <!-- Controls Container -->
         <div class="controls-container">
           <!-- Cylinder Controls -->
-          <div class="control-panel cylinder-controls">
-            <h3>Cylinder Controls</h3>
-            <div class="rotation-controls">
+          <div
+            class="control-panel cylinder-controls"
+            role="region"
+            aria-label="Cylinder Controls"
+          >
+            <h3 id="cylinder-header">Cylinder Controls</h3>
+            <div
+              class="rotation-controls"
+              role="group"
+              aria-labelledby="cylinder-header"
+            >
               <div class="radio-group">
-                <label
-                  ><input
+                <label>
+                  <input
                     type="radio"
                     id="cylinder-x"
                     name="checkCylinder"
                     checked
-                  />X-Axis</label
-                >
+                    aria-label="Rotate on X-Axis"
+                  />
+                  X-Axis
+                </label>
                 <label
                   ><input
                     type="radio"
