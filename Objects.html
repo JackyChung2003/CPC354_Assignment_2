@@ -75,255 +75,224 @@
   <body>
     <div class="container">
       <!-- Canvas for the graphic rendering -->
-      <div class="canvas">
-        <canvas id="gl-canvas" width="800" height="450">
-          Error: your browser doesn't support the HTML5 canvas element
-        </canvas>
-      </div>
-
-      <!-- Panel for parameter customization -->
-      <div class="panel vertical-align">
-        <!-- Cylinder Controls -->
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate X-Axis</div>
-          <input
-            class="checkRadio"
-            id="cylinder-x"
-            type="radio"
-            name="checkCylinder"
-            checked
-          />
-        </div>
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate Y-Axis</div>
-          <input
-            class="checkRadio"
-            id="cylinder-y"
-            type="radio"
-            name="checkCylinder"
-          />
-        </div>
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate Z-Axis</div>
-          <input
-            class="checkRadio"
-            id="cylinder-z"
-            type="radio"
-            name="checkCylinder"
-          />
-        </div>
-        <input
-          id="cylinder-btn"
-          class="anim-btn"
-          type="button"
-          value="Toggle Cylinder Anim"
-        />
-
-        <!-- Cube Controls -->
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate X-Axis</div>
-          <input
-            class="checkRadio"
-            id="cube-x"
-            type="radio"
-            name="checkCube"
-            checked
-          />
-        </div>
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate Y-Axis</div>
-          <input class="checkRadio" id="cube-y" type="radio" name="checkCube" />
-        </div>
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate Z-Axis</div>
-          <input class="checkRadio" id="cube-z" type="radio" name="checkCube" />
-        </div>
-        <input
-          id="cube-btn"
-          class="anim-btn"
-          type="button"
-          value="Toggle Cube Anim"
-        />
-
-        <!-- Sphere Controls -->
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate X-Axis</div>
-          <input
-            class="checkRadio"
-            id="sphere-x"
-            type="radio"
-            name="checkSphere"
-            checked
-          />
-        </div>
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate Y-Axis</div>
-          <input
-            class="checkRadio"
-            id="sphere-y"
-            type="radio"
-            name="checkSphere"
-          />
-        </div>
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="checkText">Rotate Z-Axis</div>
-          <input
-            class="checkRadio"
-            id="sphere-z"
-            type="radio"
-            name="checkSphere"
-          />
-        </div>
-        <input
-          id="sphere-btn"
-          class="anim-btn"
-          type="button"
-          value="Toggle Sphere Anim"
-        />
-
-        <!-- Lighting Controls -->
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="slider">
-            Ambient Lighting
-            <br /><input
-              class="slide"
-              id="slider-ambient"
-              type="range"
-              min="0.1"
-              max="1"
-              step="0.1"
-              value="0.5"
-            />
-          </div>
-          <div class="textbox">
-            <p id="text-ambient">0.5</p>
-          </div>
+      <div class="main-content">
+        <div class="canvas">
+          <canvas id="gl-canvas" width="700" height="400">
+            Error: your browser doesn't support the HTML5 canvas element
+          </canvas>
         </div>
 
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="slider">
-            Diffuse Lighting
-            <br /><input
-              class="slide"
-              id="slider-diffuse"
-              type="range"
-              min="0.1"
-              max="1"
-              step="0.1"
-              value="0.5"
-            />
+        <!-- Controls Container -->
+        <div class="controls-container">
+          <!-- Cylinder Controls -->
+          <div class="control-panel cylinder-controls">
+            <h3>Cylinder Controls</h3>
+            <div class="rotation-controls">
+              <div class="radio-group">
+                <label
+                  ><input
+                    type="radio"
+                    id="cylinder-x"
+                    name="checkCylinder"
+                    checked
+                  />X-Axis</label
+                >
+                <label
+                  ><input
+                    type="radio"
+                    id="cylinder-y"
+                    name="checkCylinder"
+                  />Y-Axis</label
+                >
+                <label
+                  ><input
+                    type="radio"
+                    id="cylinder-z"
+                    name="checkCylinder"
+                  />Z-Axis</label
+                >
+              </div>
+              <button id="cylinder-btn" class="anim-btn">
+                Toggle Animation
+              </button>
+            </div>
           </div>
-          <div class="textbox">
-            <p id="text-diffuse">0.5</p>
-          </div>
-        </div>
 
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="slider">
-            Specular Lighting
-            <br /><input
-              class="slide"
-              id="slider-specular"
-              type="range"
-              min="0.1"
-              max="1"
-              step="0.1"
-              value="0.5"
-            />
+          <!-- Cube Controls -->
+          <div class="control-panel cube-controls">
+            <h3>Cube Controls</h3>
+            <div class="rotation-controls">
+              <div class="radio-group">
+                <label
+                  ><input
+                    type="radio"
+                    id="cube-x"
+                    name="checkCube"
+                    checked
+                  />X-Axis</label
+                >
+                <label
+                  ><input
+                    type="radio"
+                    id="cube-y"
+                    name="checkCube"
+                  />Y-Axis</label
+                >
+                <label
+                  ><input
+                    type="radio"
+                    id="cube-z"
+                    name="checkCube"
+                  />Z-Axis</label
+                >
+              </div>
+              <button id="cube-btn" class="anim-btn">Toggle Animation</button>
+            </div>
           </div>
-          <div class="textbox">
-            <p id="text-specular">0.5</p>
-          </div>
-        </div>
 
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="slider">
-            Shininess
-            <br /><input
-              class="slide"
-              id="slider-shininess"
-              type="range"
-              min="10"
-              max="100"
-              step="10"
-              value="60"
-            />
+          <!-- Sphere Controls -->
+          <div class="control-panel sphere-controls">
+            <h3>Sphere Controls</h3>
+            <div class="rotation-controls">
+              <div class="radio-group">
+                <label
+                  ><input
+                    type="radio"
+                    id="sphere-x"
+                    name="checkSphere"
+                    checked
+                  />X-Axis</label
+                >
+                <label
+                  ><input
+                    type="radio"
+                    id="sphere-y"
+                    name="checkSphere"
+                  />Y-Axis</label
+                >
+                <label
+                  ><input
+                    type="radio"
+                    id="sphere-z"
+                    name="checkSphere"
+                  />Z-Axis</label
+                >
+              </div>
+              <button id="sphere-btn" class="anim-btn">Toggle Animation</button>
+            </div>
           </div>
-          <div class="textbox">
-            <p id="text-shininess">60</p>
-          </div>
-        </div>
 
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="slider">
-            Light Position X
-            <br /><input
-              class="slide"
-              id="slider-light-x"
-              type="range"
-              min="-1"
-              max="1"
-              step="0.1"
-              value="1"
-            />
-          </div>
-          <div class="textbox">
-            <p id="text-light-x">1</p>
-          </div>
-        </div>
+          <!-- Global Controls -->
+          <div class="control-panel global-controls">
+            <h3>Global Settings</h3>
+            <div class="settings-grid">
+              <!-- Animation Speed -->
+              <div class="setting-item">
+                <label>Speed</label>
+                <input
+                  type="range"
+                  id="slider-speed"
+                  min="0.1"
+                  max="2.0"
+                  step="0.1"
+                  value="1.0"
+                />
+                <span id="text-speed">1.0</span>
+              </div>
 
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="slider">
-            Light Position Y
-            <br /><input
-              class="slide"
-              id="slider-light-y"
-              type="range"
-              min="-1"
-              max="1"
-              step="0.1"
-              value="1"
-            />
-          </div>
-          <div class="textbox">
-            <p id="text-light-y">1</p>
-          </div>
-        </div>
+              <!-- Lighting Controls -->
+              <div class="setting-item">
+                <label>Ambient</label>
+                <input
+                  type="range"
+                  id="slider-ambient"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value="0.5"
+                />
+                <span id="text-ambient">0.5</span>
+              </div>
 
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="slider">
-            Light Position Z
-            <br /><input
-              class="slide"
-              id="slider-light-z"
-              type="range"
-              min="-1"
-              max="1"
-              step="0.1"
-              value="1"
-            />
-          </div>
-          <div class="textbox">
-            <p id="text-light-z">1</p>
-          </div>
-        </div>
+              <div class="setting-item">
+                <label>Diffuse</label>
+                <input
+                  type="range"
+                  id="slider-diffuse"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value="0.5"
+                />
+                <span id="text-diffuse">0.5</span>
+              </div>
 
-        <!-- Animation Speed Controls -->
-        <div class="param-panel horizontal-align mg-top-bottom">
-          <div class="slider">
-            Animation Speed
-            <br /><input
-              class="slide"
-              id="slider-speed"
-              type="range"
-              min="0.1"
-              max="2.0"
-              step="0.1"
-              value="1.0"
-            />
-          </div>
-          <div class="textbox">
-            <p id="text-speed">1.0</p>
+              <div class="setting-item">
+                <label>Specular</label>
+                <input
+                  type="range"
+                  id="slider-specular"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value="0.5"
+                />
+                <span id="text-specular">0.5</span>
+              </div>
+
+              <div class="setting-item">
+                <label>Shininess</label>
+                <input
+                  type="range"
+                  id="slider-shininess"
+                  min="10"
+                  max="100"
+                  step="10"
+                  value="60"
+                />
+                <span id="text-shininess">60</span>
+              </div>
+
+              <!-- Light Position -->
+              <div class="setting-item">
+                <label>Light X</label>
+                <input
+                  type="range"
+                  id="slider-light-x"
+                  min="-1"
+                  max="1"
+                  step="0.1"
+                  value="1"
+                />
+                <span id="text-light-x">1</span>
+              </div>
+
+              <div class="setting-item">
+                <label>Light Y</label>
+                <input
+                  type="range"
+                  id="slider-light-y"
+                  min="-1"
+                  max="1"
+                  step="0.1"
+                  value="1"
+                />
+                <span id="text-light-y">1</span>
+              </div>
+
+              <div class="setting-item">
+                <label>Light Z</label>
+                <input
+                  type="range"
+                  id="slider-light-z"
+                  min="-1"
+                  max="1"
+                  step="0.1"
+                  value="1"
+                />
+                <span id="text-light-z">1</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
