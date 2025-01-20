@@ -50,28 +50,27 @@ body {
   aspect-ratio: 16/9;
 }
 
-/* Controls container */
+/* Controls container - remove scrolling */
 .controls-container {
   flex: 1 1 auto;
-  min-height: 0; /* Important for flex overflow */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 10px;
   padding: 10px;
   background: #f8f9fa;
   border-radius: 8px;
-  overflow-y: auto;
+  overflow: hidden; /* Change from auto to hidden */
 }
 
-/* Control panels */
+/* Control panels - individual scrolling */
 .control-panel {
   background: linear-gradient(to bottom, #ffffff, #fafafa);
   border: 1px solid #eaeaea;
   padding: 10px;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  max-height: 100%;
+  overflow-y: auto; /* Keep scrolling here */
+  height: 100%; /* Ensure full height */
   display: flex;
   flex-direction: column;
 }
@@ -313,8 +312,9 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* Tab styling */
 .tabs {
-  display: flex;
-  gap: 2px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background: #f0f0f0;
   padding: 5px 5px 0;
   border-radius: 4px 4px 0 0;
@@ -340,11 +340,14 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Tab content scrolling */
 .tab-content {
   display: none;
   padding: 15px;
   background: #ffffff;
   border-radius: 0 0 4px 4px;
+  overflow-y: auto; /* Add scrolling to tab content */
+  max-height: calc(100% - 40px); /* Account for tab header height */
 }
 
 .tab-content.active {
@@ -361,10 +364,10 @@ input[type="range"]::-webkit-slider-thumb {
   }
 }
 
-/* Update control panel layout */
+/* Object controls specific styling */
 .control-panel.object-controls {
   padding: 0;
-  overflow: visible;
+  overflow: hidden; /* Hide overflow on container */
 }
 
 /* Adjust grid layout */
