@@ -1,18 +1,77 @@
 body {
   width: 100vw;
-  height: 100vh;
-  padding: 0;
+  min-height: 100vh;
+  padding: 10px;
   margin: 0;
   text-decoration: none;
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background-color: #022639;
+  border: 5px solid #4a4e69;
+  border-radius: 10px;
+  max-width: 1000px;
+  width: 100%;
 }
 
 .canvas {
-  border: 10px solid #4a4e69;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#gl-canvas {
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  max-height: 60vh;
+}
+
+.controls-panel {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.object-controls {
+  padding: 10px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+  min-width: 200px;
+  flex: 1;
+}
+
+.object-controls h3 {
+  font-size: 1rem;
+  margin: 5px 0 10px 0;
+}
+
+.param-panel {
+  margin: 3px 0;
+}
+
+.anim-btn {
+  margin: 10px 0px 5px 0px;
+  height: 35px;
+  font-size: 14px;
+}
+
+.checkText {
+  width: auto;
+  margin-right: 10px;
 }
 
 .horizontal-align {
@@ -38,11 +97,6 @@ body {
   background-color: #022639;
 }
 
-.param-panel {
-  width: 270px;
-  margin: 5px 0 5px 0;
-}
-
 .mg-top-bottom {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -57,14 +111,6 @@ body {
 .slider .slide {
   width: 120px;
   padding-top: 10px;
-}
-
-.checkText {
-  width: 150px;
-  height: 20px;
-  font-weight: bold;
-  font-size: large;
-  color: #ffffff;
 }
 
 .checkRadio {
@@ -107,20 +153,6 @@ body {
   font-weight: bold;
   font-size: 20px;
   line-height: 0.1;
-}
-
-.anim-btn {
-  margin: 15px 0px 5px 0px;
-  width: 270px;
-  height: 70px;
-  background: #34a0a4;
-  border: 5px solid #99d98c;
-  border-radius: 10px;
-  color: #ffffff;
-  text-align: center;
-  font-weight: bold;
-  font-size: 24px;
-  outline: none;
 }
 
 .anim-btn:hover {
@@ -173,4 +205,24 @@ body {
 .sphere-controls .anim-btn:hover {
   background: #ffddd2;
   color: #6d6875;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 5px;
+  }
+
+  .main-container {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .controls-panel {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .object-controls {
+    padding: 8px;
+  }
 }
