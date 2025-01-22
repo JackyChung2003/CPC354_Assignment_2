@@ -81,123 +81,137 @@
         </canvas>
       </div>
 
-      <!-- Panel for parameter customization -->
-      <div class="controls-panel horizontal-align">
-        <!-- Cylinder Controls -->
-        <div class="object-controls">
-          <h3>Cylinder Controls</h3>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate X-Axis</div>
-            <input
-              class="checkRadio"
-              id="cylinder-x"
-              type="radio"
-              name="checkCylinder"
-              checked
-            />
-          </div>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate Y-Axis</div>
-            <input
-              class="checkRadio"
-              id="cylinder-y"
-              type="radio"
-              name="checkCylinder"
-            />
-          </div>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate Z-Axis</div>
-            <input
-              class="checkRadio"
-              id="cylinder-z"
-              type="radio"
-              name="checkCylinder"
-            />
-          </div>
-          <input
-            id="cylinder-btn"
-            class="anim-btn"
-            type="button"
-            value="Toggle Cylinder Anim"
-          />
+      <!-- Tabbed Controls Panel -->
+      <div class="controls-panel">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="cylinder">Cylinder</button>
+          <button class="tab-btn" data-tab="cube">Cube</button>
+          <button class="tab-btn" data-tab="sphere">Sphere</button>
         </div>
 
-        <!-- Cube Controls -->
-        <div class="object-controls">
-          <h3>Cube Controls</h3>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate X-Axis</div>
-            <input
-              class="checkRadio"
-              id="cube-x"
-              type="radio"
-              name="checkCube"
-              checked
-            />
+        <div class="tab-content">
+          <!-- Cylinder Controls -->
+          <div class="tab-pane active" id="cylinder-tab">
+            <div class="object-controls">
+              <h3>Cylinder Controls</h3>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate X-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="cylinder-x"
+                  type="radio"
+                  name="checkCylinder"
+                  checked
+                />
+              </div>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate Y-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="cylinder-y"
+                  type="radio"
+                  name="checkCylinder"
+                />
+              </div>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate Z-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="cylinder-z"
+                  type="radio"
+                  name="checkCylinder"
+                />
+              </div>
+              <input
+                id="cylinder-btn"
+                class="anim-btn"
+                type="button"
+                value="Toggle Cylinder Anim"
+              />
+            </div>
           </div>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate Y-Axis</div>
-            <input
-              class="checkRadio"
-              id="cube-y"
-              type="radio"
-              name="checkCube"
-            />
-          </div>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate Z-Axis</div>
-            <input
-              class="checkRadio"
-              id="cube-z"
-              type="radio"
-              name="checkCube"
-            />
-          </div>
-          <input
-            id="cube-btn"
-            class="anim-btn"
-            type="button"
-            value="Toggle Cube Anim"
-          />
-        </div>
 
-        <!-- Sphere Controls -->
-        <div class="object-controls">
-          <h3>Sphere Controls</h3>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate X-Axis</div>
-            <input
-              class="checkRadio"
-              id="sphere-x"
-              type="radio"
-              name="checkSphere"
-              checked
-            />
+          <!-- Cube Controls -->
+          <div class="tab-pane" id="cube-tab">
+            <div class="object-controls">
+              <h3>Cube Controls</h3>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate X-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="cube-x"
+                  type="radio"
+                  name="checkCube"
+                  checked
+                />
+              </div>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate Y-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="cube-y"
+                  type="radio"
+                  name="checkCube"
+                />
+              </div>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate Z-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="cube-z"
+                  type="radio"
+                  name="checkCube"
+                />
+              </div>
+              <input
+                id="cube-btn"
+                class="anim-btn"
+                type="button"
+                value="Toggle Cube Anim"
+              />
+            </div>
           </div>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate Y-Axis</div>
-            <input
-              class="checkRadio"
-              id="sphere-y"
-              type="radio"
-              name="checkSphere"
-            />
+
+          <!-- Sphere Controls -->
+          <div class="tab-pane" id="sphere-tab">
+            <div class="object-controls">
+              <h3>Sphere Controls</h3>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate X-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="sphere-x"
+                  type="radio"
+                  name="checkSphere"
+                  checked
+                />
+              </div>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate Y-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="sphere-y"
+                  type="radio"
+                  name="checkSphere"
+                />
+              </div>
+              <div class="param-panel horizontal-align mg-top-bottom">
+                <div class="checkText">Rotate Z-Axis</div>
+                <input
+                  class="checkRadio"
+                  id="sphere-z"
+                  type="radio"
+                  name="checkSphere"
+                />
+              </div>
+              <input
+                id="sphere-btn"
+                class="anim-btn"
+                type="button"
+                value="Toggle Sphere Anim"
+              />
+            </div>
           </div>
-          <div class="param-panel horizontal-align mg-top-bottom">
-            <div class="checkText">Rotate Z-Axis</div>
-            <input
-              class="checkRadio"
-              id="sphere-z"
-              type="radio"
-              name="checkSphere"
-            />
-          </div>
-          <input
-            id="sphere-btn"
-            class="anim-btn"
-            type="button"
-            value="Toggle Sphere Anim"
-          />
         </div>
       </div>
     </div>

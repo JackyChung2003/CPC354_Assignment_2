@@ -37,21 +37,56 @@ body {
 
 .controls-panel {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 10px;
-  padding: 10px;
+  padding: 15px;
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 5px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+.tab-btn {
+  padding: 8px 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn.active {
+  background-color: #4a4e69;
+}
+
+.tab-content {
+  padding: 10px 0;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
 }
 
 .object-controls {
-  padding: 10px;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.05);
-  min-width: 200px;
-  flex: 1;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .object-controls h3 {
