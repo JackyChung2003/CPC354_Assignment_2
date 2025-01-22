@@ -213,8 +213,94 @@ function getUIElement() {
     debouncedRecompute();
   });
 
-  // Add similar listeners for diffuse and specular
-  // Repeat for cube and sphere controls
+  cylinderDiffuse.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCylinderDiffuse.innerHTML = value.toFixed(1);
+    cylinderMaterial.diffuse = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  cylinderSpecular.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCylinderSpecular.innerHTML = value.toFixed(1);
+    cylinderMaterial.specular = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  // Cube lighting controls
+  const cubeAmbient = document.getElementById("cube-ambient");
+  const cubeDiffuse = document.getElementById("cube-diffuse");
+  const cubeSpecular = document.getElementById("cube-specular");
+  const textCubeAmbient = document.getElementById("text-cube-ambient");
+  const textCubeDiffuse = document.getElementById("text-cube-diffuse");
+  const textCubeSpecular = document.getElementById("text-cube-specular");
+
+  cubeAmbient.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCubeAmbient.innerHTML = value.toFixed(1);
+    cubeMaterial.ambient = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  cubeDiffuse.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCubeDiffuse.innerHTML = value.toFixed(1);
+    cubeMaterial.diffuse = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  cubeSpecular.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCubeSpecular.innerHTML = value.toFixed(1);
+    cubeMaterial.specular = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  // Sphere lighting controls
+  const sphereAmbient = document.getElementById("sphere-ambient");
+  const sphereDiffuse = document.getElementById("sphere-diffuse");
+  const sphereSpecular = document.getElementById("sphere-specular");
+  const textSphereAmbient = document.getElementById("text-sphere-ambient");
+  const textSphereDiffuse = document.getElementById("text-sphere-diffuse");
+  const textSphereSpecular = document.getElementById("text-sphere-specular");
+
+  sphereAmbient.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSphereAmbient.innerHTML = value.toFixed(1);
+    sphereMaterial.ambient = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  sphereDiffuse.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSphereDiffuse.innerHTML = value.toFixed(1);
+    sphereMaterial.diffuse = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  sphereSpecular.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSphereSpecular.innerHTML = value.toFixed(1);
+    sphereMaterial.specular = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  // Add debounce function to prevent too many recomputes
+  const debouncedRecompute = debounce(() => {
+    recompute();
+  }, 16); // ~60fps
+
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
 }
 
 // Configure WebGL Settings
