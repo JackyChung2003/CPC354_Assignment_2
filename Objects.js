@@ -59,6 +59,25 @@ var materialAmbient = vec4(0.5, 0.5, 1.0, 1.0);
 var materialDiffuse = vec4(0.0, 0.9, 1.0, 1.0);
 var materialSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
+// Add these to your variable declarations
+const cylinderMaterial = {
+  ambient: vec4(0.5, 0.5, 0.5, 1.0),
+  diffuse: vec4(0.5, 0.5, 0.5, 1.0),
+  specular: vec4(0.5, 0.5, 0.5, 1.0),
+};
+
+const cubeMaterial = {
+  ambient: vec4(0.5, 0.5, 0.5, 1.0),
+  diffuse: vec4(0.5, 0.5, 0.5, 1.0),
+  specular: vec4(0.5, 0.5, 0.5, 1.0),
+};
+
+const sphereMaterial = {
+  ambient: vec4(0.5, 0.5, 0.5, 1.0),
+  diffuse: vec4(0.5, 0.5, 0.5, 1.0),
+  specular: vec4(0.5, 0.5, 0.5, 1.0),
+};
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -176,6 +195,26 @@ function getUIElement() {
   sphereBtn.onclick = () => {
     sphereFlag = !sphereFlag;
   };
+
+  // Cylinder lighting controls
+  const cylinderAmbient = document.getElementById("cylinder-ambient");
+  const cylinderDiffuse = document.getElementById("cylinder-diffuse");
+  const cylinderSpecular = document.getElementById("cylinder-specular");
+  const textCylinderAmbient = document.getElementById("text-cylinder-ambient");
+  const textCylinderDiffuse = document.getElementById("text-cylinder-diffuse");
+  const textCylinderSpecular = document.getElementById(
+    "text-cylinder-specular"
+  );
+
+  cylinderAmbient.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCylinderAmbient.innerHTML = value.toFixed(1);
+    cylinderMaterial.ambient = vec4(value, value, value, 1.0);
+    debouncedRecompute();
+  });
+
+  // Add similar listeners for diffuse and specular
+  // Repeat for cube and sphere controls
 }
 
 // Configure WebGL Settings
@@ -271,6 +310,24 @@ function drawCylinder() {
 
   nMatrix = normalMatrix(modelViewMatrix);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
+
+  // Update material products
+  const ambientProduct = mult(lightAmbient, cylinderMaterial.ambient);
+  const diffuseProduct = mult(lightDiffuse, cylinderMaterial.diffuse);
+  const specularProduct = mult(lightSpecular, cylinderMaterial.specular);
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(ambientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(diffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(specularProduct)
+  );
 
   gl.drawArrays(gl.TRIANGLES, 0, cylinderV);
 }
