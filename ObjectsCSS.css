@@ -1,280 +1,241 @@
 body {
-  margin: 0;
+  width: 100vw;
+  min-height: 100vh;
   padding: 10px;
-  height: 100vh;
+  margin: 0;
+  text-decoration: none;
   display: flex;
+  align-items: center;
   justify-content: center;
-  background-color: #f0f0f0;
-  overflow: hidden;
   box-sizing: border-box;
 }
 
-.container {
-  width: 100%;
-  max-width: 1200px;
-  height: calc(100vh - 20px);
-  padding: 10px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.main-container {
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
-  overflow: hidden;
+  gap: 10px;
+  padding: 15px;
+  background-color: #022639;
+  border-radius: 10px;
+  max-width: 1200px;
+  width: 100%;
 }
 
-/* Top section with object controls and canvas */
-.top-section {
-  display: grid;
-  grid-template-columns: 300px 1fr; /* Object controls | Canvas */
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-/* Object controls in top left */
-.control-panel.object-controls {
-  height: 300px; /* Match canvas height */
-  background: white;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-}
-
-/* Canvas container in top right */
-.canvas-container {
-  width: 500px; /* Fixed width */
-  height: 300px; /* Fixed height */
+.canvas {
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-  margin-left: auto; /* Push to right side */
 }
 
 #gl-canvas {
-  width: 100%;
-  height: 100%;
-  object-fit: contain; /* This preserves aspect ratio */
-  max-width: 500px;
-  max-height: 300px;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  max-height: 60vh;
 }
 
-/* Bottom section with light and global controls */
 .controls-container {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
   gap: 15px;
-  overflow: hidden; /* Remove the container scrollbar */
+  flex-wrap: wrap;
 }
 
-/* Canvas styling */
-.canvas {
-  flex: 0 0 auto;
-  min-height: 200px;
-  max-height: 300px; /* Fixed maximum height */
+.controls-panel {
+  flex: 1;
+  min-width: 300px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.tab-buttons {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  background: white;
-  padding: 5px;
-  margin-bottom: 15px;
+  gap: 5px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
 }
 
-/* Controls container - update layout */
-.control-panel {
-  background: linear-gradient(to bottom, #ffffff, #fafafa);
-  border: 1px solid #eaeaea;
-  padding: 8px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  position: relative;
+.tab-btn {
+  padding: 8px 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.control-panel h3 {
+.tab-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn.active {
+  background-color: #4a4e69;
+}
+
+.tab-content {
+  padding: 10px 0;
+}
+
+.tab-pane {
   display: none;
 }
 
-/* Scrollbar styling */
-.control-panel::-webkit-scrollbar {
-  width: 6px;
+.tab-pane.active {
+  display: block;
 }
 
-.control-panel::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.control-panel::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
-}
-
-.control-panel::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Rotation controls */
-.rotation-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.radio-group label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-}
-
-/* Global settings */
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
-}
-
-.setting-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.setting-item label {
-  font-size: 12px;
-  color: #666;
-}
-
-/* Sliders */
-input[type="range"] {
+.object-controls {
   width: 100%;
-  height: 6px;
-  background: #e9ecef;
-  border-radius: 3px;
-  transition: all 0.2s ease;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-input[type="range"]::-webkit-slider-thumb {
-  width: 16px;
-  height: 16px;
-  background: #007bff;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.object-controls h3 {
+  font-size: 1.1rem;
+  margin: 5px 0 10px 0;
+  color: #ffffff;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* Buttons */
+.object-controls h4 {
+  font-size: 1rem;
+  margin: 15px 0 10px 0;
+  color: #ffffff;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.param-panel {
+  margin-bottom: 8px;
+}
+
 .anim-btn {
-  padding: 6px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  margin: 10px 0px 5px 0px;
+  height: 35px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #4a4e69;
+  border: 2px solid #ffffff;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 12px;
   transition: all 0.2s ease;
+}
+
+.checkText {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  width: auto;
+  margin-right: 10px;
+}
+
+.horizontal-align {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vertical-align {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel {
+  margin-left: 10px;
+  width: 400px;
+  height: 720px;
+  border: 10px solid #4a4e69;
+  border-radius: 10px;
+  background-color: #022639;
+}
+
+.mg-top-bottom {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.slider {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #ffffff;
+}
+
+.slide {
+  width: 120px;
+}
+
+.checkRadio {
+  width: 20px;
+  height: 20px;
+  margin-right: 22px;
+}
+
+.textbox {
+  margin-left: 15px;
+  width: 55px;
+  height: 55px;
+  background: #0077b6;
+  border: 5px solid #00b4d8;
+  border-radius: 10px;
+}
+
+.textbox2 {
+  margin-left: 15px;
+  width: 40px;
+  height: 35px;
+  background: #0077b6;
+  border: 3px solid #00b4d8;
+  border-radius: 8px;
+}
+
+.textbox2 p {
+  position: relative;
+  color: #ffffff;
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  margin-top: 8px;
 }
 
 .anim-btn:hover {
-  background: #0056b3;
+  background-color: #6f7396;
 }
 
-.anim-btn.active {
-  background: #0056b3;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+.anim-btn:active {
+  background-color: #21ff94;
+  color: #000000;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .canvas-container {
-    width: 400px;
-    height: 240px;
-  }
-
-  #gl-canvas {
-    max-width: 400px;
-    max-height: 240px;
-  }
+.anim-btn:disabled {
+  animation: none;
+  pointer-events: none;
+  opacity: 0.5;
 }
 
-@media (max-width: 768px) {
-  .canvas-container {
-    width: 300px;
-    height: 180px;
+@keyframes bounce {
+  0%,
+  20%,
+  60%,
+  100% {
+    transform: translateY(0);
   }
-
-  #gl-canvas {
-    max-width: 300px;
-    max-height: 180px;
+  40% {
+    transform: translateY(-10px);
   }
-}
-
-/* Custom scrollbar for the panel */
-.panel::-webkit-scrollbar {
-  width: 8px;
-}
-
-.panel::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.panel::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.panel::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 1200px) {
-  .container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .canvas {
-    width: 100%;
-    max-width: 800px;
-  }
-
-  .panel {
-    width: 100%;
-    max-width: 800px;
-    max-height: none;
-    padding-right: 0;
-  }
-}
-
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
-
-  .container {
-    padding: 10px;
-  }
-
-  .panel {
-    padding: 10px;
-  }
-
-  .param-panel {
-    padding: 8px;
+  80% {
+    transform: translateY(-5px);
   }
 }
 
@@ -289,256 +250,218 @@ input[type="range"]::-webkit-slider-thumb {
   color: #ffa69e;
 }
 
-/* Remove or comment out these sphere-specific button styles */
 .sphere-controls .anim-btn {
-  background: #007bff; /* Match other buttons */
-  border: none;
+  background: #b5838d;
+  border-color: #ffddd2;
 }
 
 .sphere-controls .anim-btn:hover {
-  background: #0056b3; /* Match other buttons hover state */
-  color: white;
+  background: #ffddd2;
+  color: #6d6875;
 }
 
-/* Add these styles */
-.color-controls {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding-bottom: 10px; /* Add some bottom padding */
+@media (max-width: 1024px) {
+  .controls-container {
+    flex-direction: column;
+  }
+
+  .controls-panel,
+  .light-color-controls,
+  .light-source-controls {
+    min-width: 100%;
+  }
 }
 
-.color-controls label {
-  font-size: 12px;
-  color: #666;
+@media (max-width: 480px) {
+  .main-container {
+    padding: 10px;
+  }
+
+  .controls-panel,
+  .light-color-controls,
+  .light-source-controls {
+    padding: 10px;
+  }
+
+  .slide {
+    width: 100px;
+  }
 }
 
-.color-controls input[type="color"] {
-  width: 100%;
-  height: 30px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+/* Add text-specific styles */
+* {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Add section headers */
-.control-section-header {
-  display: none;
-}
-
-/* Tab styling */
-.control-panel {
-  position: relative;
-}
-
-.control-panel .tabs {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #f0f0f0;
-  padding: 4px 4px 0;
-  border-radius: 4px 4px 0 0;
-}
-
-.control-panel .tab-content {
-  display: none;
-  padding: 8px;
-}
-
-.control-panel .tab-content.active {
-  display: block;
-}
-
-/* Ensure each container's tabs work independently */
-.control-panel.object-controls .tab-content,
-.control-panel.light-controls .tab-content,
-.control-panel.global-controls .tab-content {
-  display: none;
-}
-
-.control-panel.object-controls .tab-content.active,
-.control-panel.light-controls .tab-content.active,
-.control-panel.global-controls .tab-content.active {
-  display: block;
-}
-
-/* Light source controls styling */
-.light-source-selector {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 15px;
-}
-
-.light-btn {
+.light-source-controls {
   flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  background: #f5f5f5;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.light-btn:hover {
-  background: #e0e0e0;
-}
-
-.light-btn.active {
-  background: #007bff;
-  color: white;
-  border-color: #0056b3;
-}
-
-.light-color-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.light-color-controls .setting-item {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.light-color-controls input[type="color"] {
-  width: 100%;
-  height: 30px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* Control section headers */
-.control-section {
-  padding: 8px;
-  border-bottom: 1px solid #eee;
-}
-
-/* Organize global controls into sections */
-.global-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.global-controls > div:not(:last-child) {
-  border-bottom: 1px solid #eee;
-}
-
-/* Light controls panel */
-.control-panel.light-controls {
-  background: white;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow-y: hidden; /* Remove scrollbar for light and global controls */
-}
-
-.light-controls h3 {
-  margin: 0 0 15px 0;
+  min-width: 300px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
   padding: 15px;
-  font-size: 14px;
-  color: #333;
-  border-bottom: 1px solid #eee;
-}
-
-/* Update controls container for three panels */
-.controls-container {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-}
-
-/* Responsive layout */
-@media (max-width: 1200px) {
-  .controls-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .controls-container {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Update the global controls styling to match other containers */
-.control-panel.global-controls {
-  background: white;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow-y: hidden; /* Remove scrollbar for light and global controls */
-}
-
-/* Make all control panel headers consistent */
-.control-panel .tabs {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #f0f0f0;
-  padding: 4px 4px 0;
-  border-radius: 4px 4px 0 0;
   margin-bottom: 0;
 }
 
-.control-panel .tab-btn {
-  padding: 6px 12px;
-  border: none;
-  background: #e0e0e0;
-  cursor: pointer;
-  font-size: 12px;
-  border-radius: 4px 4px 0 0;
-  transition: all 0.2s ease;
+.light-tabs {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
 }
 
-.control-panel .tab-btn.active {
-  background: #ffffff;
-  font-weight: 500;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+.light-controls {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-/* Adjust spacing for settings grid */
-.control-panel .settings-grid {
-  padding: 8px;
+.light-controls h3 {
+  font-size: 1.1rem;
+  margin: 5px 0 15px 0;
+  color: #ffffff;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* Update control panel styling */
-.control-panel {
-  background: linear-gradient(to bottom, #ffffff, #fafafa);
-  border: 1px solid #eaeaea;
-  padding: 8px;
+/* Update media query */
+@media (max-width: 768px) {
+  .light-source-controls {
+    padding: 8px;
+  }
+}
+
+/* Add these styles */
+.control-group {
+  margin-bottom: 20px;
+}
+
+.control-group h4 {
+  color: #ffffff;
+  font-size: 0.9rem;
+  margin: 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+/* Add styles for the beam settings section */
+.beam-settings {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.beam-settings .slider {
+  color: #e0e0e0;
+}
+
+/* Update tooltip style */
+.slider-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.slider-tooltip .tooltip-text {
+  visibility: hidden;
+  width: 120px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  text-align: center;
+  padding: 5px;
   border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.slider-tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Add styles for color controls */
+.light-color-controls {
+  flex: 1;
+  min-width: 300px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 0;
+}
+
+.color-group {
   display: flex;
   flex-direction: column;
-  position: relative;
+  gap: 10px;
 }
 
-/* Object controls specific styling */
-.control-panel.object-controls {
-  height: 300px;
-  overflow-y: auto; /* Keep scrollbar for object controls */
+.color-label {
+  color: #ffffff;
+  min-width: 80px;
+  font-size: 0.9rem;
 }
 
-/* Light and global controls specific styling */
-.control-panel.light-controls,
-.control-panel.global-controls {
-  overflow-y: hidden; /* Remove scrollbar for light and global controls */
+.color-picker {
+  width: 50px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-/* Tab content styling */
-.tab-content {
-  flex: 1;
-  overflow-y: auto; /* Add scrollbar to tab content instead */
-  padding: 8px;
+.color-value {
+  margin-left: 10px;
+  color: #ffffff;
+  font-size: 0.8rem;
+  opacity: 0.8;
 }
 
-/* Keep the tabs fixed at the top */
-.control-panel .tabs {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #f0f0f0;
-  padding: 4px 4px 0;
-  border-radius: 4px 4px 0 0;
+.color-value p {
+  margin: 0;
+}
+
+/* Update media query */
+@media (max-width: 768px) {
+  .color-group {
+    gap: 8px;
+  }
+
+  .color-label {
+    min-width: 60px;
+    font-size: 0.8rem;
+  }
+
+  .color-picker {
+    width: 40px;
+    height: 25px;
+  }
+}
+
+/* Add styles for light source visibility toggle */
+.light-source-toggle {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.light-source-toggle .checkText {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.light-source-toggle .checkRadio {
+  margin-left: auto;
+}
+
+/* Adjust headings for more compact layout */
+h3,
+h4 {
+  margin: 8px 0;
+  font-size: 0.95rem;
 }
