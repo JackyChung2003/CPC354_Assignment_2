@@ -50,7 +50,7 @@ var ambient = 0.5,
   diffuse = 0.5,
   specular = 0.5,
   shininess = 60;
-var lightPos = vec4(1.0, 1.0, 1.0, 0.0);
+var lightPos = vec4(1.0, 1.0, 1.0, 1.0); // w = 1.0 for point light initially
 var lightAmbient = vec4(ambient, ambient, ambient, 1.0);
 var lightDiffuse = vec4(diffuse, diffuse, diffuse, 1.0);
 var lightSpecular = vec4(specular, specular, specular, 1.0);
@@ -86,6 +86,23 @@ var eye = vec3(1.0, 1.0, 1.0);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
+// Add to variable declarations section
+var isPointLightOn = true;
+var isPointLight = true; // true for point light, false for directional
+var spotLightEnabled = false;
+var spotDirection = vec4(0.0, -1.0, 0.0, 0.0);
+var spotCutoff = 30.0;
+var spotPenumbra = 5.0;
+var spotLightPos = vec4(0.0, 1.0, 0.0, 1.0); // w = 1 for positional light
+var lightIntensity = 1.0;
+
+// Add to variable declarations
+var isLightSourceVisible = true;
+var lightSourcePoints = [];
+var lightSourceNormals = [];
+var spotLightConePoints = [];
+var spotLightConeNormals = [];
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -115,6 +132,9 @@ window.onload = function init() {
   sphereV = sphereObj.Point.length;
   wallV = wallObj.Point.length;
   totalV = pointsArray.length;
+
+  // Create light source geometries
+  createLightSourceGeometries();
 
   // WebGL setup
   getUIElement();
@@ -328,6 +348,171 @@ function getUIElement() {
     debouncedRecompute();
   });
 
+  // Point Light Controls
+  const pointLightType = document.getElementById("point-light-type");
+  const directionalLightType = document.getElementById(
+    "directional-light-type"
+  );
+  const pointLightX = document.getElementById("point-light-x");
+  const pointLightY = document.getElementById("point-light-y");
+  const pointLightZ = document.getElementById("point-light-z");
+  const textPointLightX = document.getElementById("text-point-light-x");
+  const textPointLightY = document.getElementById("text-point-light-y");
+  const textPointLightZ = document.getElementById("text-point-light-z");
+
+  // Light type radio buttons
+  pointLightType.addEventListener("change", () => {
+    isPointLight = true;
+    lightPos[3] = 1.0; // w = 1 for point light
+    render();
+  });
+
+  directionalLightType.addEventListener("change", () => {
+    isPointLight = false;
+    lightPos[3] = 0.0; // w = 0 for directional light
+    render();
+  });
+
+  // Point Light position X
+  pointLightX.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textPointLightX.innerHTML = value.toFixed(1);
+    lightPos[0] = value;
+    render();
+  });
+
+  // Point Light position Y
+  pointLightY.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textPointLightY.innerHTML = value.toFixed(1);
+    lightPos[1] = value;
+    render();
+  });
+
+  // Point Light position Z
+  pointLightZ.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textPointLightZ.innerHTML = value.toFixed(1);
+    lightPos[2] = value;
+    render();
+  });
+
+  // Spot Light Position Controls
+  const spotLightPosX = document.getElementById("spot-light-pos-x");
+  const spotLightPosY = document.getElementById("spot-light-pos-y");
+  const spotLightPosZ = document.getElementById("spot-light-pos-z");
+  const textSpotLightPosX = document.getElementById("text-spot-light-pos-x");
+  const textSpotLightPosY = document.getElementById("text-spot-light-pos-y");
+  const textSpotLightPosZ = document.getElementById("text-spot-light-pos-z");
+
+  // Spot Light position X
+  spotLightPosX.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSpotLightPosX.innerHTML = value.toFixed(1);
+    spotLightPos[0] = value;
+    updateSpotLightDirection();
+    render();
+  });
+
+  // Spot Light position Y
+  spotLightPosY.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSpotLightPosY.innerHTML = value.toFixed(1);
+    spotLightPos[1] = value;
+    updateSpotLightDirection();
+    render();
+  });
+
+  // Spot Light position Z
+  spotLightPosZ.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSpotLightPosZ.innerHTML = value.toFixed(1);
+    spotLightPos[2] = value;
+    updateSpotLightDirection();
+    render();
+  });
+
+  // Spot Light Controls
+  const spotLightDirX = document.getElementById("spot-light-dir-x");
+  const spotLightDirY = document.getElementById("spot-light-dir-y");
+  const spotLightDirZ = document.getElementById("spot-light-dir-z");
+  const spotLightCutoff = document.getElementById("spot-light-cutoff");
+  const spotLightPenumbra = document.getElementById("spot-light-penumbra");
+  const textSpotLightDirX = document.getElementById("text-spot-light-dir-x");
+  const textSpotLightDirY = document.getElementById("text-spot-light-dir-y");
+  const textSpotLightDirZ = document.getElementById("text-spot-light-dir-z");
+  const textSpotLightCutoff = document.getElementById("text-spot-light-cutoff");
+  const textSpotLightPenumbra = document.getElementById(
+    "text-spot-light-penumbra"
+  );
+
+  // Spot Light direction X
+  spotLightDirX.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSpotLightDirX.innerHTML = value.toFixed(1);
+    spotDirection[0] = value;
+    render();
+  });
+
+  // Spot Light direction Y
+  spotLightDirY.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSpotLightDirY.innerHTML = value.toFixed(1);
+    spotDirection[1] = value;
+    render();
+  });
+
+  // Spot Light direction Z
+  spotLightDirZ.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSpotLightDirZ.innerHTML = value.toFixed(1);
+    spotDirection[2] = value;
+    render();
+  });
+
+  // Spot Light cutoff angle
+  spotLightCutoff.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSpotLightCutoff.innerHTML = value.toFixed(0);
+    spotCutoff = value;
+    render();
+  });
+
+  // Penumbra (smooth edges)
+  spotLightPenumbra.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSpotLightPenumbra.innerHTML = value.toFixed(0);
+    spotPenumbra = value;
+    render();
+  });
+
+  // Add tab switching functionality
+  const lightTabBtns = document.querySelectorAll(".light-tabs .tab-btn");
+  const lightTabPanes = document.querySelectorAll(".light-content .tab-pane");
+
+  lightTabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      // Remove active class from all buttons and panes
+      lightTabBtns.forEach((b) => b.classList.remove("active"));
+      lightTabPanes.forEach((p) => p.classList.remove("active"));
+
+      // Add active class to clicked button and corresponding pane
+      btn.classList.add("active");
+      const tabId = btn.getAttribute("data-tab") + "-tab";
+      document.getElementById(tabId).classList.add("active");
+
+      // Update light type based on selected tab
+      if (btn.getAttribute("data-tab") === "spot-light") {
+        spotLightEnabled = true;
+        isPointLight = true; // Spot light is always positional
+        lightPos[3] = 1.0;
+      } else {
+        spotLightEnabled = false;
+      }
+      render();
+    });
+  });
+
   // Add debounce function to prevent too many recomputes
   const debouncedRecompute = debounce(() => {
     recompute();
@@ -344,6 +529,57 @@ function getUIElement() {
       timeout = setTimeout(later, wait);
     };
   }
+
+  // Light Color Controls
+  const lightAmbientColor = document.getElementById("light-ambient-color");
+  const lightDiffuseColor = document.getElementById("light-diffuse-color");
+  const lightSpecularColor = document.getElementById("light-specular-color");
+  const lightIntensitySlider = document.getElementById("light-intensity");
+
+  const textLightAmbient = document.getElementById("text-light-ambient");
+  const textLightDiffuse = document.getElementById("text-light-diffuse");
+  const textLightSpecular = document.getElementById("text-light-specular");
+  const textLightIntensity = document.getElementById("text-light-intensity");
+
+  // Ambient color
+  lightAmbientColor.addEventListener("input", (e) => {
+    lightAmbient = hexToRGB(e.target.value);
+    textLightAmbient.innerHTML = rgbToString(lightAmbient);
+    updateLightProducts();
+    render();
+  });
+
+  // Diffuse color
+  lightDiffuseColor.addEventListener("input", (e) => {
+    lightDiffuse = hexToRGB(e.target.value);
+    textLightDiffuse.innerHTML = rgbToString(lightDiffuse);
+    updateLightProducts();
+    render();
+  });
+
+  // Specular color
+  lightSpecularColor.addEventListener("input", (e) => {
+    lightSpecular = hexToRGB(e.target.value);
+    textLightSpecular.innerHTML = rgbToString(lightSpecular);
+    updateLightProducts();
+    render();
+  });
+
+  // Light intensity
+  lightIntensitySlider.addEventListener("input", (e) => {
+    lightIntensity = parseFloat(e.target.value);
+    textLightIntensity.innerHTML = lightIntensity.toFixed(1);
+    updateLightProducts();
+    render();
+  });
+
+  // Light source visibility toggle
+  const lightSourceVisible = document.getElementById("light-source-visible");
+
+  lightSourceVisible.addEventListener("change", () => {
+    isLightSourceVisible = lightSourceVisible.checked;
+    render();
+  });
 }
 
 // Configure WebGL Settings
@@ -386,12 +622,33 @@ function render() {
   projectionMatrix = ortho(-4, 4, -2.25, 2.25, -5, 5);
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
-  // Update view matrix to match the demo
   modelViewMatrix = lookAt(eye, at, up);
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
-  // Update light position
-  gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
+  // Update light uniforms
+  if (spotLightEnabled) {
+    gl.uniform4fv(
+      gl.getUniformLocation(program, "lightPos"),
+      flatten(spotLightPos)
+    );
+  } else {
+    gl.uniform4fv(
+      gl.getUniformLocation(program, "lightPos"),
+      flatten(lightPos)
+    );
+  }
+
+  gl.uniform1i(gl.getUniformLocation(program, "isPointLight"), isPointLight);
+  gl.uniform1i(
+    gl.getUniformLocation(program, "spotLightEnabled"),
+    spotLightEnabled
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "spotDirection"),
+    flatten(spotDirection)
+  );
+  gl.uniform1f(gl.getUniformLocation(program, "spotCutoff"), spotCutoff);
+  gl.uniform1f(gl.getUniformLocation(program, "spotPenumbra"), spotPenumbra);
 
   ambientProduct = mult(lightAmbient, materialAmbient);
   diffuseProduct = mult(lightDiffuse, materialDiffuse);
@@ -409,6 +666,13 @@ function render() {
     flatten(specularProduct)
   );
   gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
+
+  // Draw light sources
+  if (spotLightEnabled) {
+    drawLightSource(spotLightPos, true);
+  } else {
+    drawLightSource(lightPos, false);
+  }
 
   animUpdate();
 }
@@ -474,18 +738,13 @@ function drawCylinder() {
 function drawCube() {
   if (cubeFlag) cubeTheta[cubeAxis] += 1;
 
-  // Start with the view matrix
-  modelViewMatrix = lookAt(eye, at, up);
-
-  // Then apply object transformations
+  modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0));
   modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[X_AXIS], [1, 0, 0]));
   modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[Y_AXIS], [0, 1, 0]));
   modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[Z_AXIS], [0, 0, 1]));
-
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
-  // Compute normal matrix after all transformations
   nMatrix = normalMatrix(modelViewMatrix);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
@@ -510,7 +769,6 @@ function drawCube() {
     gl.getUniformLocation(program, "shininess"),
     cubeMaterial.shininess
   );
-  gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
 
   gl.drawArrays(gl.TRIANGLES, cylinderV, cubeV);
 }
@@ -596,6 +854,194 @@ function drawWall() {
 function concatData(point, normal) {
   pointsArray = pointsArray.concat(point);
   normalsArray = normalsArray.concat(normal);
+}
+
+// Add helper function to update spot light direction
+function updateSpotLightDirection() {
+  // Normalize the direction vector
+  const dirLen = Math.sqrt(
+    spotDirection[0] * spotDirection[0] +
+      spotDirection[1] * spotDirection[1] +
+      spotDirection[2] * spotDirection[2]
+  );
+
+  if (dirLen > 0) {
+    spotDirection[0] /= dirLen;
+    spotDirection[1] /= dirLen;
+    spotDirection[2] /= dirLen;
+  }
+}
+
+// Add helper function to convert hex to RGB
+function hexToRGB(hex) {
+  const r = parseInt(hex.substr(1, 2), 16) / 255;
+  const g = parseInt(hex.substr(3, 2), 16) / 255;
+  const b = parseInt(hex.substr(5, 2), 16) / 255;
+  return vec4(r, g, b, 1.0);
+}
+
+// Add helper function to convert RGB to string
+function rgbToString(color) {
+  return `RGB(${Math.round(color[0] * 255)},${Math.round(
+    color[1] * 255
+  )},${Math.round(color[2] * 255)})`;
+}
+
+// Add helper function to update light products
+function updateLightProducts() {
+  // Apply intensity to all light components
+  const scaledAmbient = scale(lightIntensity, lightAmbient);
+  const scaledDiffuse = scale(lightIntensity, lightDiffuse);
+  const scaledSpecular = scale(lightIntensity, lightSpecular);
+
+  // Update products for current material
+  ambientProduct = mult(scaledAmbient, materialAmbient);
+  diffuseProduct = mult(scaledDiffuse, materialDiffuse);
+  specularProduct = mult(scaledSpecular, materialSpecular);
+}
+
+// Add function to create light source geometries
+function createLightSourceGeometries() {
+  // Create sphere for point light
+  const radius = 0.1;
+  const latitudeBands = 10;
+  const longitudeBands = 10;
+
+  for (let latNumber = 0; latNumber <= latitudeBands; latNumber++) {
+    const theta = (latNumber * Math.PI) / latitudeBands;
+    const sinTheta = Math.sin(theta);
+    const cosTheta = Math.cos(theta);
+
+    for (let longNumber = 0; longNumber <= longitudeBands; longNumber++) {
+      const phi = (longNumber * 2 * Math.PI) / longitudeBands;
+      const sinPhi = Math.sin(phi);
+      const cosPhi = Math.cos(phi);
+
+      const x = cosPhi * sinTheta;
+      const y = cosTheta;
+      const z = sinPhi * sinTheta;
+
+      lightSourcePoints.push(vec4(x * radius, y * radius, z * radius, 1.0));
+      lightSourceNormals.push(vec3(x, y, z));
+    }
+  }
+
+  // Create cone for spot light
+  const height = 0.3;
+  const baseRadius = 0.1;
+  const segments = 16;
+
+  // Cone base center
+  const baseCenter = vec4(0.0, 0.0, 0.0, 1.0);
+  // Cone tip
+  const tip = vec4(0.0, height, 0.0, 1.0);
+
+  for (let i = 0; i < segments; i++) {
+    const angle1 = (i / segments) * 2 * Math.PI;
+    const angle2 = ((i + 1) / segments) * 2 * Math.PI;
+
+    const p1 = vec4(
+      baseRadius * Math.cos(angle1),
+      0.0,
+      baseRadius * Math.sin(angle1),
+      1.0
+    );
+    const p2 = vec4(
+      baseRadius * Math.cos(angle2),
+      0.0,
+      baseRadius * Math.sin(angle2),
+      1.0
+    );
+
+    // Calculate normals
+    const v1 = subtract(p1, tip);
+    const v2 = subtract(p2, tip);
+    const normal = normalize(cross(v1, v2));
+
+    // Add triangles for cone surface
+    spotLightConePoints.push(tip);
+    spotLightConePoints.push(p1);
+    spotLightConePoints.push(p2);
+
+    spotLightConeNormals.push(normal);
+    spotLightConeNormals.push(normal);
+    spotLightConeNormals.push(normal);
+
+    // Add triangles for base
+    spotLightConePoints.push(baseCenter);
+    spotLightConePoints.push(p1);
+    spotLightConePoints.push(p2);
+
+    spotLightConeNormals.push(vec3(0.0, -1.0, 0.0));
+    spotLightConeNormals.push(vec3(0.0, -1.0, 0.0));
+    spotLightConeNormals.push(vec3(0.0, -1.0, 0.0));
+  }
+}
+
+// Update drawLightSource function
+function drawLightSource(position, isSpotLight) {
+  if (!isLightSourceVisible) return;
+
+  modelViewMatrix = mat4();
+  modelViewMatrix = mult(
+    modelViewMatrix,
+    translate(position[0], position[1], position[2])
+  );
+
+  if (isSpotLight) {
+    // Calculate rotation matrix to align cone with spot direction
+    const up = vec3(0.0, 1.0, 0.0);
+    const spotDir = normalize(
+      vec3(spotDirection[0], spotDirection[1], spotDirection[2])
+    );
+    const rotationAxis = cross(up, spotDir);
+    const rotationAngle = Math.acos(dot(up, spotDir));
+
+    if (length(rotationAxis) > 0.001) {
+      modelViewMatrix = mult(
+        modelViewMatrix,
+        rotate((rotationAngle * 180) / Math.PI, rotationAxis)
+      );
+    }
+  }
+
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+
+  // Use emissive material for light source
+  const lightMaterial = {
+    ambient: vec4(1.0, 1.0, 1.0, 1.0),
+    diffuse: vec4(1.0, 1.0, 1.0, 1.0),
+    specular: vec4(1.0, 1.0, 1.0, 1.0),
+    shininess: 100.0,
+  };
+
+  const ambientProduct = mult(lightAmbient, lightMaterial.ambient);
+  const diffuseProduct = mult(lightDiffuse, lightMaterial.diffuse);
+  const specularProduct = mult(lightSpecular, lightMaterial.specular);
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(ambientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(diffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(specularProduct)
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "shininess"),
+    lightMaterial.shininess
+  );
+
+  // Draw appropriate geometry
+  if (isSpotLight) {
+    gl.drawArrays(gl.TRIANGLES, 0, spotLightConePoints.length);
+  } else {
+    gl.drawArrays(gl.TRIANGLES, 0, lightSourcePoints.length);
+  }
 }
 
 /*-----------------------------------------------------------------------------------*/

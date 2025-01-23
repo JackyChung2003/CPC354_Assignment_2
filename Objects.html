@@ -23,6 +23,11 @@
       uniform vec4 specularProduct;
       uniform vec4 lightPos;
       uniform float shininess;
+      uniform bool isPointLight;
+      uniform bool spotLightEnabled;
+      uniform vec4 spotDirection;
+      uniform float spotCutoff;
+      uniform float spotPenumbra;
 
       attribute vec4 vPosition;
       attribute vec3 vNormal;
@@ -31,28 +36,46 @@
 
       void main() {
           vec3 pos = (modelViewMatrix * vPosition).xyz;
-          vec3 light = lightPos.xyz;
           vec3 L;
 
-          if (lightPos.w == 0.0)
-              L = normalize(lightPos.xyz);
-          else
+          // Calculate light direction based on light type
+          if (isPointLight) {
               L = normalize(lightPos.xyz - pos);
+          } else {
+              L = normalize(lightPos.xyz);
+          }
 
           vec3 E = -normalize(pos);
           vec3 H = normalize(L + E);
-
           vec3 N = normalize(normalMatrix * vNormal);
 
+          // Calculate basic lighting
           vec4 ambient = ambientProduct;
           float Kd = max(dot(L, N), 0.0);
           vec4 diffuse = Kd * diffuseProduct;
-
           float Ks = pow(max(dot(N, H), 0.0), shininess);
           vec4 specular = Ks * specularProduct;
 
+          // Apply spot light effect if enabled
+          if (spotLightEnabled) {
+              vec3 spotDir = normalize(spotDirection.xyz);
+              float spotEffect = dot(-L, spotDir);
+
+              // Convert angles to radians
+              float spotCutoffRadians = radians(spotCutoff);
+              float outerCutoff = radians(spotCutoff + spotPenumbra);
+
+              // Smooth transition between inner and outer cone
+              float epsilon = cos(spotCutoffRadians) - cos(outerCutoff);
+              float intensity = clamp((spotEffect - cos(outerCutoff)) / epsilon, 0.0, 1.0);
+
+              // Apply spot light effect with smooth falloff
+              diffuse *= intensity;
+              specular *= intensity;
+          }
+
           if (dot(L, N) < 0.0) {
-              specular = vec4(0.0, 0.0, 0.0, 1.0);
+              specular = vec4(0.0);
           }
 
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;
@@ -82,362 +105,694 @@
       </div>
 
       <!-- Tabbed Controls Panel -->
-      <div class="controls-panel">
-        <div class="tab-buttons">
-          <button class="tab-btn active" data-tab="cylinder">Cylinder</button>
-          <button class="tab-btn" data-tab="cube">Cube</button>
-          <button class="tab-btn" data-tab="sphere">Sphere</button>
+      <div class="controls-container">
+        <!-- Object Controls -->
+        <div class="controls-panel">
+          <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="cylinder">Cylinder</button>
+            <button class="tab-btn" data-tab="cube">Cube</button>
+            <button class="tab-btn" data-tab="sphere">Sphere</button>
+          </div>
+
+          <div class="tab-content">
+            <!-- Cylinder Controls -->
+            <div class="tab-pane active" id="cylinder-tab">
+              <div class="object-controls">
+                <h3>Cylinder Controls</h3>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate X-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="cylinder-x"
+                    type="radio"
+                    name="checkCylinder"
+                    checked
+                  />
+                </div>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate Y-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="cylinder-y"
+                    type="radio"
+                    name="checkCylinder"
+                  />
+                </div>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate Z-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="cylinder-z"
+                    type="radio"
+                    name="checkCylinder"
+                  />
+                </div>
+                <div class="object-controls">
+                  <!-- Lighting Controls -->
+                  <h4>Lighting Controls</h4>
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Ambient
+                      <br />0.1<input
+                        class="slide"
+                        id="cylinder-ambient"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-cylinder-ambient">0.5</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Diffuse
+                      <br />0.1<input
+                        class="slide"
+                        id="cylinder-diffuse"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-cylinder-diffuse">0.5</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Specular
+                      <br />0.1<input
+                        class="slide"
+                        id="cylinder-specular"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-cylinder-specular">0.5</p>
+                    </div>
+                  </div>
+
+                  <!-- For Cylinder -->
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Shininess
+                      <br />10<input
+                        class="slide"
+                        id="cylinder-shininess"
+                        type="range"
+                        min="10"
+                        max="100"
+                        step="10"
+                        value="60"
+                      />100
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-cylinder-shininess">60</p>
+                    </div>
+                  </div>
+                </div>
+                <input
+                  id="cylinder-btn"
+                  class="anim-btn"
+                  type="button"
+                  value="Toggle Cylinder Anim"
+                />
+              </div>
+            </div>
+
+            <!-- Cube Controls -->
+            <div class="tab-pane" id="cube-tab">
+              <div class="object-controls">
+                <h3>Cube Controls</h3>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate X-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="cube-x"
+                    type="radio"
+                    name="checkCube"
+                    checked
+                  />
+                </div>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate Y-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="cube-y"
+                    type="radio"
+                    name="checkCube"
+                  />
+                </div>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate Z-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="cube-z"
+                    type="radio"
+                    name="checkCube"
+                  />
+                </div>
+                <div class="object-controls">
+                  <!-- Lighting Controls -->
+                  <h4>Lighting Controls</h4>
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Ambient
+                      <br />0.1<input
+                        class="slide"
+                        id="cube-ambient"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-cube-ambient">0.5</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Diffuse
+                      <br />0.1<input
+                        class="slide"
+                        id="cube-diffuse"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-cube-diffuse">0.5</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Specular
+                      <br />0.1<input
+                        class="slide"
+                        id="cube-specular"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-cube-specular">0.5</p>
+                    </div>
+                  </div>
+
+                  <!-- For Cube -->
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Shininess
+                      <br />10<input
+                        class="slide"
+                        id="cube-shininess"
+                        type="range"
+                        min="10"
+                        max="100"
+                        step="10"
+                        value="60"
+                      />100
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-cube-shininess">60</p>
+                    </div>
+                  </div>
+                </div>
+                <input
+                  id="cube-btn"
+                  class="anim-btn"
+                  type="button"
+                  value="Toggle Cube Anim"
+                />
+              </div>
+            </div>
+
+            <!-- Sphere Controls -->
+            <div class="tab-pane" id="sphere-tab">
+              <div class="object-controls">
+                <h3>Sphere Controls</h3>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate X-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="sphere-x"
+                    type="radio"
+                    name="checkSphere"
+                    checked
+                  />
+                </div>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate Y-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="sphere-y"
+                    type="radio"
+                    name="checkSphere"
+                  />
+                </div>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Rotate Z-Axis</div>
+                  <input
+                    class="checkRadio"
+                    id="sphere-z"
+                    type="radio"
+                    name="checkSphere"
+                  />
+                </div>
+                <div class="object-controls">
+                  <!-- Lighting Controls -->
+                  <h4>Lighting Controls</h4>
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Ambient
+                      <br />0.1<input
+                        class="slide"
+                        id="sphere-ambient"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-sphere-ambient">0.5</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Diffuse
+                      <br />0.1<input
+                        class="slide"
+                        id="sphere-diffuse"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-sphere-diffuse">0.5</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Specular
+                      <br />0.1<input
+                        class="slide"
+                        id="sphere-specular"
+                        type="range"
+                        min="0.1"
+                        max="1"
+                        step="0.1"
+                        value="0.5"
+                      />1.0
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-sphere-specular">0.5</p>
+                    </div>
+                  </div>
+
+                  <!-- For Sphere -->
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Shininess
+                      <br />10<input
+                        class="slide"
+                        id="sphere-shininess"
+                        type="range"
+                        min="10"
+                        max="100"
+                        step="10"
+                        value="60"
+                      />100
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-sphere-shininess">60</p>
+                    </div>
+                  </div>
+                </div>
+                <input
+                  id="sphere-btn"
+                  class="anim-btn"
+                  type="button"
+                  value="Toggle Sphere Anim"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="tab-content">
-          <!-- Cylinder Controls -->
-          <div class="tab-pane active" id="cylinder-tab">
-            <div class="object-controls">
-              <h3>Cylinder Controls</h3>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate X-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="cylinder-x"
-                  type="radio"
-                  name="checkCylinder"
-                  checked
-                />
-              </div>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate Y-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="cylinder-y"
-                  type="radio"
-                  name="checkCylinder"
-                />
-              </div>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate Z-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="cylinder-z"
-                  type="radio"
-                  name="checkCylinder"
-                />
-              </div>
-              <div class="object-controls">
-                <!-- Lighting Controls -->
-                <h4>Lighting Controls</h4>
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Ambient
-                    <br />0.1<input
-                      class="slide"
-                      id="cylinder-ambient"
-                      type="range"
-                      min="0.1"
-                      max="1"
-                      step="0.1"
-                      value="0.5"
-                    />1.0
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-cylinder-ambient">0.5</p>
-                  </div>
-                </div>
-
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Diffuse
-                    <br />0.1<input
-                      class="slide"
-                      id="cylinder-diffuse"
-                      type="range"
-                      min="0.1"
-                      max="1"
-                      step="0.1"
-                      value="0.5"
-                    />1.0
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-cylinder-diffuse">0.5</p>
-                  </div>
-                </div>
-
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Specular
-                    <br />0.1<input
-                      class="slide"
-                      id="cylinder-specular"
-                      type="range"
-                      min="0.1"
-                      max="1"
-                      step="0.1"
-                      value="0.5"
-                    />1.0
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-cylinder-specular">0.5</p>
-                  </div>
-                </div>
-
-                <!-- For Cylinder -->
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Shininess
-                    <br />10<input
-                      class="slide"
-                      id="cylinder-shininess"
-                      type="range"
-                      min="10"
-                      max="100"
-                      step="10"
-                      value="60"
-                    />100
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-cylinder-shininess">60</p>
-                  </div>
-                </div>
-              </div>
+        <!-- Light Color Controls -->
+        <div class="light-color-controls">
+          <div class="color-group">
+            <div class="param-panel horizontal-align">
+              <div class="color-label">Ambient</div>
               <input
-                id="cylinder-btn"
-                class="anim-btn"
-                type="button"
-                value="Toggle Cylinder Anim"
+                type="color"
+                id="light-ambient-color"
+                value="#808080"
+                class="color-picker"
+              />
+              <div class="color-value">
+                <p id="text-light-ambient">RGB(128,128,128)</p>
+              </div>
+            </div>
+
+            <div class="param-panel horizontal-align">
+              <div class="color-label">Diffuse</div>
+              <input
+                type="color"
+                id="light-diffuse-color"
+                value="#ffffff"
+                class="color-picker"
+              />
+              <div class="color-value">
+                <p id="text-light-diffuse">RGB(255,255,255)</p>
+              </div>
+            </div>
+
+            <div class="param-panel horizontal-align">
+              <div class="color-label">Specular</div>
+              <input
+                type="color"
+                id="light-specular-color"
+                value="#ffffff"
+                class="color-picker"
+              />
+              <div class="color-value">
+                <p id="text-light-specular">RGB(255,255,255)</p>
+              </div>
+            </div>
+
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Intensity
+                <br />0<input
+                  class="slide"
+                  id="light-intensity"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value="1"
+                />1
+              </div>
+              <div class="textbox2">
+                <p id="text-light-intensity">1.0</p>
+              </div>
+            </div>
+
+            <!-- Add this inside the light-color-controls div, after the intensity slider -->
+            <div class="param-panel horizontal-align mg-top-bottom">
+              <div class="checkText">Show Light Source</div>
+              <input
+                class="checkRadio"
+                id="light-source-visible"
+                type="checkbox"
+                checked
               />
             </div>
           </div>
+        </div>
 
-          <!-- Cube Controls -->
-          <div class="tab-pane" id="cube-tab">
-            <div class="object-controls">
-              <h3>Cube Controls</h3>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate X-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="cube-x"
-                  type="radio"
-                  name="checkCube"
-                  checked
-                />
-              </div>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate Y-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="cube-y"
-                  type="radio"
-                  name="checkCube"
-                />
-              </div>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate Z-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="cube-z"
-                  type="radio"
-                  name="checkCube"
-                />
-              </div>
-              <div class="object-controls">
-                <!-- Lighting Controls -->
-                <h4>Lighting Controls</h4>
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Ambient
-                    <br />0.1<input
-                      class="slide"
-                      id="cube-ambient"
-                      type="range"
-                      min="0.1"
-                      max="1"
-                      step="0.1"
-                      value="0.5"
-                    />1.0
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-cube-ambient">0.5</p>
-                  </div>
-                </div>
-
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Diffuse
-                    <br />0.1<input
-                      class="slide"
-                      id="cube-diffuse"
-                      type="range"
-                      min="0.1"
-                      max="1"
-                      step="0.1"
-                      value="0.5"
-                    />1.0
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-cube-diffuse">0.5</p>
-                  </div>
-                </div>
-
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Specular
-                    <br />0.1<input
-                      class="slide"
-                      id="cube-specular"
-                      type="range"
-                      min="0.1"
-                      max="1"
-                      step="0.1"
-                      value="0.5"
-                    />1.0
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-cube-specular">0.5</p>
-                  </div>
-                </div>
-
-                <!-- For Cube -->
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Shininess
-                    <br />10<input
-                      class="slide"
-                      id="cube-shininess"
-                      type="range"
-                      min="10"
-                      max="100"
-                      step="10"
-                      value="60"
-                    />100
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-cube-shininess">60</p>
-                  </div>
-                </div>
-              </div>
-              <input
-                id="cube-btn"
-                class="anim-btn"
-                type="button"
-                value="Toggle Cube Anim"
-              />
-            </div>
+        <!-- Light Source Controls -->
+        <div class="light-source-controls">
+          <div class="tab-buttons light-tabs">
+            <button class="tab-btn active" data-tab="point-light">
+              Point Light
+            </button>
+            <button class="tab-btn" data-tab="spot-light">Spot Light</button>
           </div>
 
-          <!-- Sphere Controls -->
-          <div class="tab-pane" id="sphere-tab">
-            <div class="object-controls">
-              <h3>Sphere Controls</h3>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate X-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="sphere-x"
-                  type="radio"
-                  name="checkSphere"
-                  checked
-                />
-              </div>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate Y-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="sphere-y"
-                  type="radio"
-                  name="checkSphere"
-                />
-              </div>
-              <div class="param-panel horizontal-align mg-top-bottom">
-                <div class="checkText">Rotate Z-Axis</div>
-                <input
-                  class="checkRadio"
-                  id="sphere-z"
-                  type="radio"
-                  name="checkSphere"
-                />
-              </div>
-              <div class="object-controls">
-                <!-- Lighting Controls -->
-                <h4>Lighting Controls</h4>
+          <div class="tab-content light-content">
+            <!-- Point Light Controls -->
+            <div class="tab-pane active" id="point-light-tab">
+              <div class="light-controls">
+                <h3>Point Light Controls</h3>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Point Light</div>
+                  <input
+                    class="checkRadio"
+                    id="point-light-type"
+                    type="radio"
+                    name="lightType"
+                    checked
+                  />
+                </div>
+                <div class="param-panel horizontal-align mg-top-bottom">
+                  <div class="checkText">Directional Light</div>
+                  <input
+                    class="checkRadio"
+                    id="directional-light-type"
+                    type="radio"
+                    name="lightType"
+                  />
+                </div>
+
                 <div class="param-panel horizontal-align">
                   <div class="slider">
-                    Ambient
-                    <br />0.1<input
+                    Position X
+                    <br />-1<input
                       class="slide"
-                      id="sphere-ambient"
+                      id="point-light-x"
                       type="range"
-                      min="0.1"
+                      min="-1"
                       max="1"
                       step="0.1"
-                      value="0.5"
-                    />1.0
+                      value="1"
+                    />1
                   </div>
                   <div class="textbox2">
-                    <p id="text-sphere-ambient">0.5</p>
+                    <p id="text-point-light-x">1</p>
                   </div>
                 </div>
 
                 <div class="param-panel horizontal-align">
                   <div class="slider">
-                    Diffuse
-                    <br />0.1<input
+                    Position Y
+                    <br />-1<input
                       class="slide"
-                      id="sphere-diffuse"
+                      id="point-light-y"
                       type="range"
-                      min="0.1"
+                      min="-1"
                       max="1"
                       step="0.1"
-                      value="0.5"
-                    />1.0
+                      value="1"
+                    />1
                   </div>
                   <div class="textbox2">
-                    <p id="text-sphere-diffuse">0.5</p>
+                    <p id="text-point-light-y">1</p>
                   </div>
                 </div>
 
                 <div class="param-panel horizontal-align">
                   <div class="slider">
-                    Specular
-                    <br />0.1<input
+                    Position Z
+                    <br />-1<input
                       class="slide"
-                      id="sphere-specular"
+                      id="point-light-z"
                       type="range"
-                      min="0.1"
+                      min="-1"
                       max="1"
                       step="0.1"
-                      value="0.5"
-                    />1.0
+                      value="1"
+                    />1
                   </div>
                   <div class="textbox2">
-                    <p id="text-sphere-specular">0.5</p>
-                  </div>
-                </div>
-
-                <!-- For Sphere -->
-                <div class="param-panel horizontal-align">
-                  <div class="slider">
-                    Shininess
-                    <br />10<input
-                      class="slide"
-                      id="sphere-shininess"
-                      type="range"
-                      min="10"
-                      max="100"
-                      step="10"
-                      value="60"
-                    />100
-                  </div>
-                  <div class="textbox2">
-                    <p id="text-sphere-shininess">60</p>
+                    <p id="text-point-light-z">1</p>
                   </div>
                 </div>
               </div>
-              <input
-                id="sphere-btn"
-                class="anim-btn"
-                type="button"
-                value="Toggle Sphere Anim"
-              />
+            </div>
+
+            <!-- Spot Light Controls -->
+            <div class="tab-pane" id="spot-light-tab">
+              <div class="light-controls">
+                <h3>Spot Light Controls</h3>
+
+                <!-- Spot Light Position Controls -->
+                <div class="control-group">
+                  <h4>Position</h4>
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Position X
+                      <br />-1<input
+                        class="slide"
+                        id="spot-light-pos-x"
+                        type="range"
+                        min="-1"
+                        max="1"
+                        step="0.1"
+                        value="0"
+                      />1
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-spot-light-pos-x">0</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Position Y
+                      <br />-1<input
+                        class="slide"
+                        id="spot-light-pos-y"
+                        type="range"
+                        min="-1"
+                        max="1"
+                        step="0.1"
+                        value="1"
+                      />1
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-spot-light-pos-y">1</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Position Z
+                      <br />-1<input
+                        class="slide"
+                        id="spot-light-pos-z"
+                        type="range"
+                        min="-1"
+                        max="1"
+                        step="0.1"
+                        value="0"
+                      />1
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-spot-light-pos-z">0</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Existing direction controls with updated heading -->
+                <div class="control-group">
+                  <h4>Direction</h4>
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Direction X
+                      <br />-1<input
+                        class="slide"
+                        id="spot-light-dir-x"
+                        type="range"
+                        min="-1"
+                        max="1"
+                        step="0.1"
+                        value="0"
+                      />1
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-spot-light-dir-x">0</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Direction Y
+                      <br />-1<input
+                        class="slide"
+                        id="spot-light-dir-y"
+                        type="range"
+                        min="-1"
+                        max="1"
+                        step="0.1"
+                        value="-1"
+                      />1
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-spot-light-dir-y">-1</p>
+                    </div>
+                  </div>
+
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Direction Z
+                      <br />-1<input
+                        class="slide"
+                        id="spot-light-dir-z"
+                        type="range"
+                        min="-1"
+                        max="1"
+                        step="0.1"
+                        value="0"
+                      />1
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-spot-light-dir-z">0</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Inside the spot-light-tab div, add cutoff angle control after direction controls -->
+                <div class="control-group">
+                  <h4>Beam Settings</h4>
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Cutoff Angle
+                      <br />0<input
+                        class="slide"
+                        id="spot-light-cutoff"
+                        type="range"
+                        min="0"
+                        max="90"
+                        step="1"
+                        value="30"
+                      />90
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-spot-light-cutoff">30</p>
+                    </div>
+                  </div>
+
+                  <!-- Add inner/outer cutoff control for smoother edges -->
+                  <div class="param-panel horizontal-align">
+                    <div class="slider">
+                      Penumbra
+                      <br />0<input
+                        class="slide"
+                        id="spot-light-penumbra"
+                        type="range"
+                        min="0"
+                        max="20"
+                        step="1"
+                        value="5"
+                      />20
+                    </div>
+                    <div class="textbox2">
+                      <p id="text-spot-light-penumbra">5</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
