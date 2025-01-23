@@ -71,6 +71,10 @@ var currentLightType = "point"; // 'point', 'directional', or 'spot'
 var spotDirection = vec3(0.0, -1.0, 0.0);
 var spotCutoff = 45.0;
 
+// Add variables for light states
+var pointLightEnabled = true;
+var spotLightEnabled = true;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -123,6 +127,17 @@ window.onload = function init() {
 
   document.getElementById("slider-spot-angle").value = "45.0";
   document.getElementById("text-spot-angle").innerHTML = "45.0";
+
+  // Add event listeners for light toggles
+  document.getElementById("point-light-toggle").onchange = function () {
+    pointLightEnabled = this.checked;
+    render();
+  };
+
+  document.getElementById("spot-light-toggle").onchange = function () {
+    spotLightEnabled = this.checked;
+    render();
+  };
 };
 
 // Retrieve all elements from HTML and store in the corresponding variables
@@ -312,16 +327,32 @@ function render() {
   gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
   gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
 
-  // Update spot light uniforms
+  // Update light uniforms
+  gl.uniform1i(
+    gl.getUniformLocation(program, "pointLightEnabled"),
+    pointLightEnabled ? 1 : 0
+  );
+  gl.uniform1i(
+    gl.getUniformLocation(program, "spotLightEnabled"),
+    spotLightEnabled ? 1 : 0
+  );
+
+  // Point light uniforms
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "pointLightPos"),
+    flatten(lightPos)
+  );
+
+  // Spot light uniforms
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "spotLightPos"),
+    flatten(lightPos)
+  );
   gl.uniform3fv(
     gl.getUniformLocation(program, "spotDirection"),
     flatten(spotDirection)
   );
   gl.uniform1f(gl.getUniformLocation(program, "spotCutoff"), spotCutoff);
-  gl.uniform1i(
-    gl.getUniformLocation(program, "lightType"),
-    currentLightType === "spot" ? 1 : 0
-  );
 
   drawCylinder();
   drawCube();
@@ -412,28 +443,7 @@ function openTab(evt, tabName) {
   document.getElementById(tabName).style.display = "block";
   evt.currentTarget.className += " active";
 
-  // Update light type and position based on selected tab
-  if (tabName === "spotLight") {
-    currentLightType = "spot";
-    lightPos = vec4(0.0, 2.0, 0.0, 1.0); // Reset to default spot light position
-
-    // Update UI to match
-    document.getElementById("slider-spot-x").value = "0.0";
-    document.getElementById("text-spot-x").innerHTML = "0.0";
-    document.getElementById("slider-spot-y").value = "2.0";
-    document.getElementById("text-spot-y").innerHTML = "2.0";
-    document.getElementById("slider-spot-z").value = "0.0";
-    document.getElementById("text-spot-z").innerHTML = "0.0";
-  } else {
-    currentLightType =
-      lightTypeSelect.value === "directional" ? "directional" : "point";
-    lightPos = vec4(
-      1.0,
-      1.0,
-      1.0,
-      currentLightType === "directional" ? 0.0 : 1.0
-    );
-  }
+  // Don't change light states when switching tabs
   render();
 }
 

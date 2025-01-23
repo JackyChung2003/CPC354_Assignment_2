@@ -26,6 +26,10 @@
       uniform vec3 spotDirection;
       uniform float spotCutoff;
       uniform int lightType; // 0: directional/point, 1: spot
+      uniform bool pointLightEnabled;
+      uniform bool spotLightEnabled;
+      uniform vec4 pointLightPos;
+      uniform vec4 spotLightPos;
 
       attribute vec4 vPosition;
       attribute vec3 vNormal;
@@ -34,50 +38,67 @@
 
       void main() {
           vec3 pos = (modelViewMatrix * vPosition).xyz;
-          vec3 L;
+          vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
 
-          // Calculate light direction
-          if (lightPos.w == 0.0)
-              L = normalize(lightPos.xyz);
-          else
-              L = normalize(lightPos.xyz - pos);
+          // Add ambient light only once
+          finalColor += ambientProduct;
 
-          vec3 E = -normalize(pos);
-          vec3 H = normalize(L + E);
-          vec3 N = normalize(normalMatrix * vNormal);
+          // Point light calculation
+          if (pointLightEnabled) {
+              vec3 L;
+              if (pointLightPos.w == 0.0)
+                  L = normalize(pointLightPos.xyz);
+              else
+                  L = normalize(pointLightPos.xyz - pos);
 
-          // Calculate basic lighting
-          vec4 ambient = ambientProduct;
-          float Kd = max(dot(L, N), 0.0);
-          vec4 diffuse = Kd * diffuseProduct;
-          float Ks = pow(max(dot(N, H), 0.0), shininess);
-          vec4 specular = Ks * specularProduct;
+              vec3 E = -normalize(pos);
+              vec3 H = normalize(L + E);
+              vec3 N = normalize(normalMatrix * vNormal);
 
-          if (dot(L, N) < 0.0) {
-              specular = vec4(0.0, 0.0, 0.0, 1.0);
+              float Kd = max(dot(L, N), 0.0);
+              vec4 diffuse = Kd * diffuseProduct;
+
+              float Ks = pow(max(dot(N, H), 0.0), shininess);
+              vec4 specular = Ks * specularProduct;
+
+              if (dot(L, N) < 0.0) {
+                  specular = vec4(0.0, 0.0, 0.0, 1.0);
+              }
+
+              finalColor += diffuse + specular;
           }
 
-          // Apply spot light effect if needed
-          if (lightType == 1) {
+          // Spot light calculation
+          if (spotLightEnabled) {
+              vec3 L = normalize(spotLightPos.xyz - pos);
+              vec3 E = -normalize(pos);
+              vec3 H = normalize(L + E);
+              vec3 N = normalize(normalMatrix * vNormal);
+
               vec3 spotDir = normalize(spotDirection);
               float spotEffect = dot(-L, spotDir);
               float cutoff = cos(radians(spotCutoff));
 
               if (spotEffect > cutoff) {
-                  // Inside spot cone - smoother falloff
                   float spotFactor = (spotEffect - cutoff) / (1.0 - cutoff);
-                  float spotIntensity = pow(spotFactor, 2.0); // Reduced exponent for more visible light
-                  diffuse *= spotIntensity * 2.0; // Increased intensity
-                  specular *= spotIntensity * 2.0; // Increased intensity
-              } else {
-                  // Outside spot cone - keep some ambient
-                  diffuse = vec4(0.0);
-                  specular = vec4(0.0);
+                  float spotIntensity = pow(spotFactor, 2.0);
+
+                  float Kd = max(dot(L, N), 0.0);
+                  vec4 diffuse = Kd * diffuseProduct * spotIntensity * 2.0;
+
+                  float Ks = pow(max(dot(N, H), 0.0), shininess);
+                  vec4 specular = Ks * specularProduct * spotIntensity * 2.0;
+
+                  if (dot(L, N) < 0.0) {
+                      specular = vec4(0.0, 0.0, 0.0, 1.0);
+                  }
+
+                  finalColor += diffuse + specular;
               }
           }
 
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-          fColor = ambient + diffuse + specular;
+          fColor = finalColor;
           fColor.a = 1.0;
       }
     </script>
@@ -121,6 +142,17 @@
 
           <!-- Point Light Tab -->
           <div id="pointLight" class="tab-content" style="display: block">
+            <!-- Add toggle switch -->
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Point Light
+                <label class="switch">
+                  <input type="checkbox" id="point-light-toggle" checked />
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+            </div>
+
             <!-- Light Type Selection -->
             <div class="param-panel horizontal-align">
               <div class="slider">
@@ -190,6 +222,17 @@
 
           <!-- Spot Light Tab -->
           <div id="spotLight" class="tab-content">
+            <!-- Add toggle switch -->
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Spot Light
+                <label class="switch">
+                  <input type="checkbox" id="spot-light-toggle" checked />
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+            </div>
+
             <!-- Spot Light Position Controls -->
             <div class="param-panel horizontal-align">
               <div class="slider">
