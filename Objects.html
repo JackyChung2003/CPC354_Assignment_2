@@ -23,6 +23,9 @@
       uniform vec4 specularProduct;
       uniform vec4 lightPos;
       uniform float shininess;
+      uniform vec3 spotDirection;
+      uniform float spotCutoff;
+      uniform int lightType; // 0: directional/point, 1: spot
 
       attribute vec4 vPosition;
       attribute vec3 vNormal;
@@ -31,9 +34,9 @@
 
       void main() {
           vec3 pos = (modelViewMatrix * vPosition).xyz;
-          vec3 light = lightPos.xyz;
           vec3 L;
 
+          // Calculate light direction
           if (lightPos.w == 0.0)
               L = normalize(lightPos.xyz);
           else
@@ -41,18 +44,36 @@
 
           vec3 E = -normalize(pos);
           vec3 H = normalize(L + E);
-
           vec3 N = normalize(normalMatrix * vNormal);
 
+          // Calculate basic lighting
           vec4 ambient = ambientProduct;
           float Kd = max(dot(L, N), 0.0);
           vec4 diffuse = Kd * diffuseProduct;
-
           float Ks = pow(max(dot(N, H), 0.0), shininess);
           vec4 specular = Ks * specularProduct;
 
           if (dot(L, N) < 0.0) {
               specular = vec4(0.0, 0.0, 0.0, 1.0);
+          }
+
+          // Apply spot light effect if needed
+          if (lightType == 1) {
+              vec3 spotDir = normalize(spotDirection);
+              float spotEffect = dot(-L, spotDir);
+              float cutoff = cos(radians(spotCutoff));
+
+              if (spotEffect > cutoff) {
+                  // Inside spot cone - smoother falloff
+                  float spotFactor = (spotEffect - cutoff) / (1.0 - cutoff);
+                  float spotIntensity = pow(spotFactor, 2.0); // Reduced exponent for more visible light
+                  diffuse *= spotIntensity * 2.0; // Increased intensity
+                  specular *= spotIntensity * 2.0; // Increased intensity
+              } else {
+                  // Outside spot cone - keep some ambient
+                  diffuse = vec4(0.0);
+                  specular = vec4(0.0);
+              }
           }
 
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;

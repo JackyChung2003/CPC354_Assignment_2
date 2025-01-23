@@ -50,7 +50,7 @@ var ambient = 0.5,
   diffuse = 0.5,
   specular = 0.5,
   shininess = 60;
-var lightPos = vec4(1.0, 1.0, 1.0, 0.0);
+var lightPos = vec4(0.0, 2.0, 0.0, 1.0);
 var lightAmbient = vec4(ambient, ambient, ambient, 1.0);
 var lightDiffuse = vec4(diffuse, diffuse, diffuse, 1.0);
 var lightSpecular = vec4(specular, specular, specular, 1.0);
@@ -65,6 +65,11 @@ var lightTypeSelect,
   diffuseColorPicker,
   specularColorPicker;
 var sliderLightX, sliderLightY, sliderLightZ;
+
+// Add new variables for spot light
+var currentLightType = "point"; // 'point', 'directional', or 'spot'
+var spotDirection = vec3(0.0, -1.0, 0.0);
+var spotCutoff = 45.0;
 
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
@@ -100,6 +105,24 @@ window.onload = function init() {
   getUIElement();
   configWebGL();
   render();
+
+  // Set initial values for spot light controls
+  document.getElementById("slider-spot-x").value = "0.0";
+  document.getElementById("text-spot-x").innerHTML = "0.0";
+  document.getElementById("slider-spot-y").value = "2.0";
+  document.getElementById("text-spot-y").innerHTML = "2.0";
+  document.getElementById("slider-spot-z").value = "0.0";
+  document.getElementById("text-spot-z").innerHTML = "0.0";
+
+  document.getElementById("slider-spot-dir-x").value = "0.0";
+  document.getElementById("text-spot-dir-x").innerHTML = "0.0";
+  document.getElementById("slider-spot-dir-y").value = "-1.0";
+  document.getElementById("text-spot-dir-y").innerHTML = "-1.0";
+  document.getElementById("slider-spot-dir-z").value = "0.0";
+  document.getElementById("text-spot-dir-z").innerHTML = "0.0";
+
+  document.getElementById("slider-spot-angle").value = "45.0";
+  document.getElementById("text-spot-angle").innerHTML = "45.0";
 };
 
 // Retrieve all elements from HTML and store in the corresponding variables
@@ -180,7 +203,47 @@ function getUIElement() {
   };
 
   // Add spot light event listeners
-  // ... (I can provide the spot light control implementation if needed)
+  document.getElementById("slider-spot-x").oninput = function () {
+    lightPos[0] = parseFloat(this.value);
+    document.getElementById("text-spot-x").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("slider-spot-y").oninput = function () {
+    lightPos[1] = parseFloat(this.value);
+    document.getElementById("text-spot-y").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("slider-spot-z").oninput = function () {
+    lightPos[2] = parseFloat(this.value);
+    document.getElementById("text-spot-z").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("slider-spot-dir-x").oninput = function () {
+    spotDirection[0] = parseFloat(this.value);
+    document.getElementById("text-spot-dir-x").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("slider-spot-dir-y").oninput = function () {
+    spotDirection[1] = parseFloat(this.value);
+    document.getElementById("text-spot-dir-y").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("slider-spot-dir-z").oninput = function () {
+    spotDirection[2] = parseFloat(this.value);
+    document.getElementById("text-spot-dir-z").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("slider-spot-angle").oninput = function () {
+    spotCutoff = parseFloat(this.value);
+    document.getElementById("text-spot-angle").innerHTML = this.value;
+    render();
+  };
 }
 
 // Configure WebGL Settings
@@ -214,6 +277,14 @@ function configWebGL() {
   modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
   projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
   normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
+
+  // Add uniform locations for spot light
+  gl.uniform3fv(
+    gl.getUniformLocation(program, "spotDirection"),
+    flatten(spotDirection)
+  );
+  gl.uniform1f(gl.getUniformLocation(program, "spotCutoff"), spotCutoff);
+  gl.uniform1i(gl.getUniformLocation(program, "lightType"), 0); // Default to point/directional
 }
 
 // Render the graphics for viewing
@@ -240,6 +311,17 @@ function render() {
   );
   gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
   gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
+
+  // Update spot light uniforms
+  gl.uniform3fv(
+    gl.getUniformLocation(program, "spotDirection"),
+    flatten(spotDirection)
+  );
+  gl.uniform1f(gl.getUniformLocation(program, "spotCutoff"), spotCutoff);
+  gl.uniform1i(
+    gl.getUniformLocation(program, "lightType"),
+    currentLightType === "spot" ? 1 : 0
+  );
 
   drawCylinder();
   drawCube();
@@ -330,13 +412,27 @@ function openTab(evt, tabName) {
   document.getElementById(tabName).style.display = "block";
   evt.currentTarget.className += " active";
 
-  // Update light type based on selected tab
+  // Update light type and position based on selected tab
   if (tabName === "spotLight") {
-    // Enable spot light mode
     currentLightType = "spot";
+    lightPos = vec4(0.0, 2.0, 0.0, 1.0); // Reset to default spot light position
+
+    // Update UI to match
+    document.getElementById("slider-spot-x").value = "0.0";
+    document.getElementById("text-spot-x").innerHTML = "0.0";
+    document.getElementById("slider-spot-y").value = "2.0";
+    document.getElementById("text-spot-y").innerHTML = "2.0";
+    document.getElementById("slider-spot-z").value = "0.0";
+    document.getElementById("text-spot-z").innerHTML = "0.0";
   } else {
-    // Restore point/directional light mode
-    currentLightType = lightTypeSelect.value;
+    currentLightType =
+      lightTypeSelect.value === "directional" ? "directional" : "point";
+    lightPos = vec4(
+      1.0,
+      1.0,
+      1.0,
+      currentLightType === "directional" ? 0.0 : 1.0
+    );
   }
   render();
 }
