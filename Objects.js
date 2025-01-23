@@ -103,24 +103,6 @@ var lightSourceNormals = [];
 var spotLightConePoints = [];
 var spotLightConeNormals = [];
 
-// Add to your variable declarations
-let currentLightSource = "point"; // 'point' or 'spot'
-let pointLight = {
-  ambient: vec4(0.5, 0.5, 0.5, 1.0),
-  diffuse: vec4(1.0, 1.0, 1.0, 1.0),
-  specular: vec4(1.0, 1.0, 1.0, 1.0),
-  position: vec4(1.0, 1.0, 1.0, 0.0),
-};
-
-let spotLight = {
-  ambient: vec4(0.5, 0.5, 0.5, 1.0),
-  diffuse: vec4(1.0, 1.0, 1.0, 1.0),
-  specular: vec4(1.0, 1.0, 1.0, 1.0),
-  position: vec4(1.0, 1.0, 1.0, 0.0),
-  direction: vec3(0.0, -1.0, 0.0),
-  cutoff: 30.0,
-};
-
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -159,30 +141,6 @@ window.onload = function init() {
   configWebGL();
   render();
 
-<<<<<<< HEAD
-  // Initialize tabs for each container separately
-  const containers = document.querySelectorAll(".control-panel");
-  containers.forEach((container) => {
-    const buttons = container.querySelectorAll(".tab-btn");
-    const contents = container.querySelectorAll(".tab-content");
-
-    buttons.forEach((button) => {
-      button.addEventListener("click", () => {
-        // Remove active class only from buttons within this container
-        buttons.forEach((btn) => btn.classList.remove("active"));
-        contents.forEach((content) => content.classList.remove("active"));
-
-        // Add active class to clicked button
-        button.classList.add("active");
-
-        // Show corresponding content within this container
-        const tabId = `${button.getAttribute("data-tab")}-tab`;
-        const tabContent = container.querySelector(`#${tabId}`);
-        if (tabContent) {
-          tabContent.classList.add("active");
-        }
-      });
-=======
   // Tab functionality
   const tabButtons = document.querySelectorAll(".tab-btn");
   const tabPanes = document.querySelectorAll(".tab-pane");
@@ -198,7 +156,6 @@ window.onload = function init() {
       document
         .getElementById(`${button.dataset.tab}-tab`)
         .classList.add("active");
->>>>>>> ydsjk
     });
   });
 };
@@ -600,62 +557,6 @@ function getUIElement() {
     render();
   });
 
-<<<<<<< HEAD
-  sphereColor.onchange = function (event) {
-    const color = hexToRGB(event.target.value);
-    sphereMaterial = vec4(color.r, color.g, color.b, 1.0);
-    recompute();
-  };
-
-  // Light source controls
-  const lightBtns = document.querySelectorAll(".light-btn");
-  const lightAmbientColor = document.getElementById("light-ambient-color");
-  const lightDiffuseColor = document.getElementById("light-diffuse-color");
-  const lightSpecularColor = document.getElementById("light-specular-color");
-
-  // Light source selection
-  lightBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      lightBtns.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentLightSource = btn.dataset.light;
-      updateLightColors(); // Update color inputs to show current light source colors
-      debouncedRecompute();
-    });
-  });
-
-  // Light color controls
-  function hexToVec4(hex) {
-    const r = parseInt(hex.substr(1, 2), 16) / 255;
-    const g = parseInt(hex.substr(3, 2), 16) / 255;
-    const b = parseInt(hex.substr(5, 2), 16) / 255;
-    return vec4(r, g, b, 1.0);
-  }
-
-  function updateLightColors() {
-    const light = currentLightSource === "point" ? pointLight : spotLight;
-    lightAmbientColor.value = vec4ToHex(light.ambient);
-    lightDiffuseColor.value = vec4ToHex(light.diffuse);
-    lightSpecularColor.value = vec4ToHex(light.specular);
-  }
-
-  lightAmbientColor.addEventListener("input", (e) => {
-    const light = currentLightSource === "point" ? pointLight : spotLight;
-    light.ambient = hexToVec4(e.target.value);
-    debouncedRecompute();
-  });
-
-  lightDiffuseColor.addEventListener("input", (e) => {
-    const light = currentLightSource === "point" ? pointLight : spotLight;
-    light.diffuse = hexToVec4(e.target.value);
-    debouncedRecompute();
-  });
-
-  lightSpecularColor.addEventListener("input", (e) => {
-    const light = currentLightSource === "point" ? pointLight : spotLight;
-    light.specular = hexToVec4(e.target.value);
-    debouncedRecompute();
-=======
   // Specular color
   lightSpecularColor.addEventListener("input", (e) => {
     lightSpecular = hexToRGB(e.target.value);
@@ -738,7 +639,6 @@ function getUIElement() {
     textCameraAtZ.innerHTML = value.toFixed(1);
     at[2] = value;
     render();
->>>>>>> ydsjk
   });
 }
 
@@ -746,11 +646,6 @@ function getUIElement() {
 function configWebGL() {
   gl = WebGLUtils.setupWebGL(canvas);
   if (!gl) alert("WebGL isn't available");
-
-  // Set canvas size with proper aspect ratio
-  const aspectRatio = 16 / 9; // or whatever ratio you want
-  canvas.width = 500; // match CSS width
-  canvas.height = canvas.width / aspectRatio;
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -784,10 +679,6 @@ function configWebGL() {
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-<<<<<<< HEAD
-  const aspect = canvas.width / canvas.height;
-  const projectionMatrix = ortho(-4 * aspect, 4 * aspect, -4, 4, -5, 5);
-=======
   // Wider perspective with adjusted near and far planes
   projectionMatrix = perspective(
     45, // field of view in degrees
@@ -795,7 +686,6 @@ function render() {
     0.1, // near plane
     50.0
   ); // far plane (increased)
->>>>>>> ydsjk
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
   // Calculate view matrix from camera parameters
