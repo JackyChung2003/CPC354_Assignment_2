@@ -98,66 +98,6 @@ window.onload = function init() {
 // Retrieve all elements from HTML and store in the corresponding variables
 function getUIElement() {
   canvas = document.getElementById("gl-canvas");
-
-  // Cylinder controls
-  cylinderX = document.getElementById("cylinder-x");
-  cylinderY = document.getElementById("cylinder-y");
-  cylinderZ = document.getElementById("cylinder-z");
-  cylinderBtn = document.getElementById("cylinder-btn");
-
-  // Cube controls
-  cubeX = document.getElementById("cube-x");
-  cubeY = document.getElementById("cube-y");
-  cubeZ = document.getElementById("cube-z");
-  cubeBtn = document.getElementById("cube-btn");
-
-  // Sphere controls
-  sphereX = document.getElementById("sphere-x");
-  sphereY = document.getElementById("sphere-y");
-  sphereZ = document.getElementById("sphere-z");
-  sphereBtn = document.getElementById("sphere-btn");
-
-  // Event listeners for Cylinder
-  cylinderX.onchange = () => {
-    if (cylinderX.checked) cylinderAxis = X_AXIS;
-  };
-  cylinderY.onchange = () => {
-    if (cylinderY.checked) cylinderAxis = Y_AXIS;
-  };
-  cylinderZ.onchange = () => {
-    if (cylinderZ.checked) cylinderAxis = Z_AXIS;
-  };
-  cylinderBtn.onclick = () => {
-    cylinderFlag = !cylinderFlag;
-  };
-
-  // Event listeners for Cube
-  cubeX.onchange = () => {
-    if (cubeX.checked) cubeAxis = X_AXIS;
-  };
-  cubeY.onchange = () => {
-    if (cubeY.checked) cubeAxis = Y_AXIS;
-  };
-  cubeZ.onchange = () => {
-    if (cubeZ.checked) cubeAxis = Z_AXIS;
-  };
-  cubeBtn.onclick = () => {
-    cubeFlag = !cubeFlag;
-  };
-
-  // Event listeners for Sphere
-  sphereX.onchange = () => {
-    if (sphereX.checked) sphereAxis = X_AXIS;
-  };
-  sphereY.onchange = () => {
-    if (sphereY.checked) sphereAxis = Y_AXIS;
-  };
-  sphereZ.onchange = () => {
-    if (sphereZ.checked) sphereAxis = Z_AXIS;
-  };
-  sphereBtn.onclick = () => {
-    sphereFlag = !sphereFlag;
-  };
 }
 
 // Configure WebGL Settings
@@ -218,37 +158,16 @@ function render() {
   gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
   gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
 
-  animUpdate();
-}
-
-// Update the animation frame
-function animUpdate() {
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   drawCylinder();
   drawCube();
   drawSphere();
   drawWall();
-  window.requestAnimationFrame(animUpdate);
 }
 
 // Draw functions for Cylinder, Cube, and Sphere
 function drawCylinder() {
-  if (cylinderFlag) cylinderTheta[cylinderAxis] += 1;
-
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(cylinderTheta[X_AXIS], [1, 0, 0])
-  );
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(cylinderTheta[Y_AXIS], [0, 1, 0])
-  );
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(cylinderTheta[Z_AXIS], [0, 0, 1])
-  );
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
   nMatrix = normalMatrix(modelViewMatrix);
@@ -258,13 +177,8 @@ function drawCylinder() {
 }
 
 function drawCube() {
-  if (cubeFlag) cubeTheta[cubeAxis] += 1;
-
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0));
-  modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[X_AXIS], [1, 0, 0]));
-  modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[Y_AXIS], [0, 1, 0]));
-  modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[Z_AXIS], [0, 0, 1]));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
   nMatrix = normalMatrix(modelViewMatrix);
@@ -274,22 +188,8 @@ function drawCube() {
 }
 
 function drawSphere() {
-  if (sphereFlag) sphereTheta[sphereAxis] += 1;
-
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(2, 0, 0));
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(sphereTheta[X_AXIS], [1, 0, 0])
-  );
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(sphereTheta[Y_AXIS], [0, 1, 0])
-  );
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(sphereTheta[Z_AXIS], [0, 0, 1])
-  );
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
   nMatrix = normalMatrix(modelViewMatrix);
