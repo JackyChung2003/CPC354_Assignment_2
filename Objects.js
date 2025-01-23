@@ -652,51 +652,43 @@ function inverse3(m) {
 }
 
 function updateMaterialUniforms(material) {
-  // Convert vec4 colors to vec3 for scaling
-  var ambientVec3 = vec3(
-    material.ambient[0],
-    material.ambient[1],
-    material.ambient[2]
-  );
-  var diffuseVec3 = vec3(
-    material.diffuse[0],
-    material.diffuse[1],
-    material.diffuse[2]
-  );
-  var specularVec3 = vec3(
-    material.specular[0],
-    material.specular[1],
-    material.specular[2]
-  );
-
-  // Scale the colors by their coefficients
-  var scaledAmbient = scale(material.ambientCoef, ambientVec3);
-  var scaledDiffuse = scale(material.diffuseCoef, diffuseVec3);
-  var scaledSpecular = scale(material.specularCoef, specularVec3);
-
-  // Convert back to vec4 for final products
+  // Calculate lighting products
   var ambientProduct = vec4(
-    scaledAmbient[0] * lightAmbient[0],
-    scaledAmbient[1] * lightAmbient[1],
-    scaledAmbient[2] * lightAmbient[2],
+    material.ambient[0] * material.ambientCoef * lightAmbient[0],
+    material.ambient[1] * material.ambientCoef * lightAmbient[1],
+    material.ambient[2] * material.ambientCoef * lightAmbient[2],
     1.0
   );
 
   var diffuseProduct = vec4(
-    scaledDiffuse[0] * lightDiffuse[0],
-    scaledDiffuse[1] * lightDiffuse[1],
-    scaledDiffuse[2] * lightDiffuse[2],
+    material.diffuse[0] * material.diffuseCoef * lightDiffuse[0],
+    material.diffuse[1] * material.diffuseCoef * lightDiffuse[1],
+    material.diffuse[2] * material.diffuseCoef * lightDiffuse[2],
     1.0
   );
 
   var specularProduct = vec4(
-    scaledSpecular[0] * lightSpecular[0],
-    scaledSpecular[1] * lightSpecular[1],
-    scaledSpecular[2] * lightSpecular[2],
+    material.specular[0] * material.specularCoef * lightSpecular[0],
+    material.specular[1] * material.specularCoef * lightSpecular[1],
+    material.specular[2] * material.specularCoef * lightSpecular[2],
     1.0
   );
 
-  // Send to shader
+  // Send material properties to shader
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "materialAmbient"),
+    flatten(material.ambient)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "materialDiffuse"),
+    flatten(material.diffuse)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "materialSpecular"),
+    flatten(material.specular)
+  );
+
+  // Send lighting products to shader
   gl.uniform4fv(
     gl.getUniformLocation(program, "ambientProduct"),
     flatten(ambientProduct)
@@ -708,6 +700,20 @@ function updateMaterialUniforms(material) {
   gl.uniform4fv(
     gl.getUniformLocation(program, "specularProduct"),
     flatten(specularProduct)
+  );
+
+  // Send coefficients and shininess
+  gl.uniform1f(
+    gl.getUniformLocation(program, "ambientCoef"),
+    material.ambientCoef
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "diffuseCoef"),
+    material.diffuseCoef
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "specularCoef"),
+    material.specularCoef
   );
   gl.uniform1f(gl.getUniformLocation(program, "shininess"), material.shininess);
 }
