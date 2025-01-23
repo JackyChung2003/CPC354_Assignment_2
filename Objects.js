@@ -81,6 +81,11 @@ const sphereMaterial = {
   shininess: 60.0,
 };
 
+// Add these variables at the top with other declarations
+var eye = vec3(1.0, 1.0, 1.0);
+var at = vec3(0.0, 0.0, 0.0);
+var up = vec3(0.0, 1.0, 0.0);
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -381,6 +386,13 @@ function render() {
   projectionMatrix = ortho(-4, 4, -2.25, 2.25, -5, 5);
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
+  // Update view matrix to match the demo
+  modelViewMatrix = lookAt(eye, at, up);
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+
+  // Update light position
+  gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
+
   ambientProduct = mult(lightAmbient, materialAmbient);
   diffuseProduct = mult(lightDiffuse, materialDiffuse);
   specularProduct = mult(lightSpecular, materialSpecular);
@@ -396,7 +408,6 @@ function render() {
     gl.getUniformLocation(program, "specularProduct"),
     flatten(specularProduct)
   );
-  gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
   gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
 
   animUpdate();
@@ -463,13 +474,18 @@ function drawCylinder() {
 function drawCube() {
   if (cubeFlag) cubeTheta[cubeAxis] += 1;
 
-  modelViewMatrix = mat4();
+  // Start with the view matrix
+  modelViewMatrix = lookAt(eye, at, up);
+
+  // Then apply object transformations
   modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0));
   modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[X_AXIS], [1, 0, 0]));
   modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[Y_AXIS], [0, 1, 0]));
   modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[Z_AXIS], [0, 0, 1]));
+
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
+  // Compute normal matrix after all transformations
   nMatrix = normalMatrix(modelViewMatrix);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
@@ -494,6 +510,7 @@ function drawCube() {
     gl.getUniformLocation(program, "shininess"),
     cubeMaterial.shininess
   );
+  gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
 
   gl.drawArrays(gl.TRIANGLES, cylinderV, cubeV);
 }
