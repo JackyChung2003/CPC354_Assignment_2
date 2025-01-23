@@ -523,6 +523,105 @@
             </div>
           </div>
         </div>
+
+        <!-- Material Properties Section -->
+        <div class="control-section">
+          <h3 class="section-title">Material Properties</h3>
+
+          <!-- Object Selection -->
+          <div class="param-panel horizontal-align">
+            <div class="slider">
+              Select Object:
+              <select id="object-select" class="select-box">
+                <option value="cylinder">Cylinder</option>
+                <option value="cube">Cube</option>
+                <option value="sphere">Sphere</option>
+                <option value="wall">Wall</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Material Colors -->
+          <div class="param-panel horizontal-align">
+            <div class="slider">
+              Material Ambient Color
+              <input type="color" id="material-ambient-color" value="#808080" />
+            </div>
+            <div class="slider">
+              Ambient Coefficient
+              <br />0<input
+                class="slide"
+                id="ambient-coef"
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value="0.5"
+              />1
+              <span id="text-ambient-coef">0.5</span>
+            </div>
+          </div>
+
+          <div class="param-panel horizontal-align">
+            <div class="slider">
+              Material Diffuse Color
+              <input type="color" id="material-diffuse-color" value="#808080" />
+            </div>
+            <div class="slider">
+              Diffuse Coefficient
+              <br />0<input
+                class="slide"
+                id="diffuse-coef"
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value="0.5"
+              />1
+              <span id="text-diffuse-coef">0.5</span>
+            </div>
+          </div>
+
+          <div class="param-panel horizontal-align">
+            <div class="slider">
+              Material Specular Color
+              <input
+                type="color"
+                id="material-specular-color"
+                value="#808080"
+              />
+            </div>
+            <div class="slider">
+              Specular Coefficient
+              <br />0<input
+                class="slide"
+                id="specular-coef"
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value="0.5"
+              />1
+              <span id="text-specular-coef">0.5</span>
+            </div>
+          </div>
+
+          <div class="param-panel horizontal-align">
+            <div class="slider">
+              Shininess
+              <br />1<input
+                class="slide"
+                id="material-shininess"
+                type="range"
+                min="1"
+                max="100"
+                step="1"
+                value="30"
+              />100
+              <span id="text-material-shininess">30</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </body>

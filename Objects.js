@@ -51,12 +51,12 @@ var ambient = 0.5,
   specular = 0.5,
   shininess = 60;
 var lightPos = vec4(0.0, 2.0, 0.0, 1.0);
-var lightAmbient = vec4(ambient, ambient, ambient, 1.0);
-var lightDiffuse = vec4(diffuse, diffuse, diffuse, 1.0);
-var lightSpecular = vec4(specular, specular, specular, 1.0);
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
+var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
+var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
-var materialAmbient = vec4(0.5, 0.5, 1.0, 1.0);
-var materialDiffuse = vec4(0.0, 0.9, 1.0, 1.0);
+var materialAmbient = vec4(0.5, 0.0, 0.0, 1.0);
+var materialDiffuse = vec4(1.0, 0.0, 0.0, 1.0);
 var materialSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
 // Add new UI element variables
@@ -79,6 +79,48 @@ var spotLightEnabled = true;
 var eye = vec3(0.0, 0.0, 5.0); // Camera position
 var at = vec3(0.0, 0.0, 0.0); // Look at point
 var up = vec3(0.0, 1.0, 0.0); // Up vector
+
+// Add material properties for each object
+var materials = {
+  cylinder: {
+    ambient: vec4(0.5, 0.0, 0.0, 1.0), // Red-ish
+    diffuse: vec4(1.0, 0.0, 0.0, 1.0),
+    specular: vec4(1.0, 1.0, 1.0, 1.0),
+    shininess: 30,
+    ambientCoef: 0.5,
+    diffuseCoef: 0.8,
+    specularCoef: 0.5,
+  },
+  cube: {
+    ambient: vec4(0.0, 0.5, 0.0, 1.0), // Green-ish
+    diffuse: vec4(0.0, 1.0, 0.0, 1.0),
+    specular: vec4(1.0, 1.0, 1.0, 1.0),
+    shininess: 30,
+    ambientCoef: 0.5,
+    diffuseCoef: 0.8,
+    specularCoef: 0.5,
+  },
+  sphere: {
+    ambient: vec4(0.0, 0.0, 0.5, 1.0), // Blue-ish
+    diffuse: vec4(0.0, 0.0, 1.0, 1.0),
+    specular: vec4(1.0, 1.0, 1.0, 1.0),
+    shininess: 30,
+    ambientCoef: 0.5,
+    diffuseCoef: 0.8,
+    specularCoef: 0.5,
+  },
+  wall: {
+    ambient: vec4(0.5, 0.5, 0.5, 1.0), // Gray
+    diffuse: vec4(0.8, 0.8, 0.8, 1.0),
+    specular: vec4(1.0, 1.0, 1.0, 1.0),
+    shininess: 30,
+    ambientCoef: 0.5,
+    diffuseCoef: 0.8,
+    specularCoef: 0.5,
+  },
+};
+
+var currentObject = "cylinder";
 
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
@@ -180,6 +222,56 @@ window.onload = function init() {
     document.getElementById("text-look-at-z").innerHTML = this.value;
     render();
   };
+
+  // Add material control handlers
+  document.getElementById("object-select").onchange = function () {
+    currentObject = this.value;
+    updateMaterialControls();
+  };
+
+  document.getElementById("material-ambient-color").oninput = function () {
+    const color = hexToRgb(this.value);
+    materials[currentObject].ambient = vec4(color.r, color.g, color.b, 1.0);
+    render();
+  };
+
+  document.getElementById("material-diffuse-color").oninput = function () {
+    const color = hexToRgb(this.value);
+    materials[currentObject].diffuse = vec4(color.r, color.g, color.b, 1.0);
+    render();
+  };
+
+  document.getElementById("material-specular-color").oninput = function () {
+    const color = hexToRgb(this.value);
+    materials[currentObject].specular = vec4(color.r, color.g, color.b, 1.0);
+    render();
+  };
+
+  document.getElementById("ambient-coef").oninput = function () {
+    materials[currentObject].ambientCoef = parseFloat(this.value);
+    document.getElementById("text-ambient-coef").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("diffuse-coef").oninput = function () {
+    materials[currentObject].diffuseCoef = parseFloat(this.value);
+    document.getElementById("text-diffuse-coef").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("specular-coef").oninput = function () {
+    materials[currentObject].specularCoef = parseFloat(this.value);
+    document.getElementById("text-specular-coef").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("material-shininess").oninput = function () {
+    materials[currentObject].shininess = parseFloat(this.value);
+    document.getElementById("text-material-shininess").innerHTML = this.value;
+    render();
+  };
+
+  updateMaterialControls();
 };
 
 // Retrieve all elements from HTML and store in the corresponding variables
@@ -415,6 +507,8 @@ function render() {
 
 // Draw functions for Cylinder, Cube, and Sphere
 function drawCylinder() {
+  var mat = materials.cylinder;
+  updateMaterialUniforms(mat);
   var mvMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
@@ -425,6 +519,8 @@ function drawCylinder() {
 }
 
 function drawCube() {
+  var mat = materials.cube;
+  updateMaterialUniforms(mat);
   var mvMatrix = mult(modelViewMatrix, translate(0, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
@@ -435,6 +531,8 @@ function drawCube() {
 }
 
 function drawSphere() {
+  var mat = materials.sphere;
+  updateMaterialUniforms(mat);
   var mvMatrix = mult(modelViewMatrix, translate(2, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
@@ -445,6 +543,8 @@ function drawSphere() {
 }
 
 function drawWall() {
+  var mat = materials.wall;
+  updateMaterialUniforms(mat);
   var mvMatrix = mult(
     modelViewMatrix,
     mult(translate(0, 0, -2), scale(8, 4.5, 0.01))
@@ -549,6 +649,99 @@ function inverse3(m) {
   result[2][2] = (a00 * a11 - a10 * a01) / det;
 
   return result;
+}
+
+function updateMaterialUniforms(material) {
+  // Convert vec4 colors to vec3 for scaling
+  var ambientVec3 = vec3(
+    material.ambient[0],
+    material.ambient[1],
+    material.ambient[2]
+  );
+  var diffuseVec3 = vec3(
+    material.diffuse[0],
+    material.diffuse[1],
+    material.diffuse[2]
+  );
+  var specularVec3 = vec3(
+    material.specular[0],
+    material.specular[1],
+    material.specular[2]
+  );
+
+  // Scale the colors by their coefficients
+  var scaledAmbient = scale(material.ambientCoef, ambientVec3);
+  var scaledDiffuse = scale(material.diffuseCoef, diffuseVec3);
+  var scaledSpecular = scale(material.specularCoef, specularVec3);
+
+  // Convert back to vec4 for final products
+  var ambientProduct = vec4(
+    scaledAmbient[0] * lightAmbient[0],
+    scaledAmbient[1] * lightAmbient[1],
+    scaledAmbient[2] * lightAmbient[2],
+    1.0
+  );
+
+  var diffuseProduct = vec4(
+    scaledDiffuse[0] * lightDiffuse[0],
+    scaledDiffuse[1] * lightDiffuse[1],
+    scaledDiffuse[2] * lightDiffuse[2],
+    1.0
+  );
+
+  var specularProduct = vec4(
+    scaledSpecular[0] * lightSpecular[0],
+    scaledSpecular[1] * lightSpecular[1],
+    scaledSpecular[2] * lightSpecular[2],
+    1.0
+  );
+
+  // Send to shader
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(ambientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(diffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(specularProduct)
+  );
+  gl.uniform1f(gl.getUniformLocation(program, "shininess"), material.shininess);
+}
+
+function updateMaterialControls() {
+  const material = materials[currentObject];
+  document.getElementById("material-ambient-color").value = rgbToHex(
+    material.ambient
+  );
+  document.getElementById("material-diffuse-color").value = rgbToHex(
+    material.diffuse
+  );
+  document.getElementById("material-specular-color").value = rgbToHex(
+    material.specular
+  );
+  document.getElementById("ambient-coef").value = material.ambientCoef;
+  document.getElementById("diffuse-coef").value = material.diffuseCoef;
+  document.getElementById("specular-coef").value = material.specularCoef;
+  document.getElementById("material-shininess").value = material.shininess;
+
+  document.getElementById("text-ambient-coef").innerHTML = material.ambientCoef;
+  document.getElementById("text-diffuse-coef").innerHTML = material.diffuseCoef;
+  document.getElementById("text-specular-coef").innerHTML =
+    material.specularCoef;
+  document.getElementById("text-material-shininess").innerHTML =
+    material.shininess;
+}
+
+// Helper function to convert RGB vector to hex
+function rgbToHex(color) {
+  const r = Math.round(color[0] * 255);
+  const g = Math.round(color[1] * 255);
+  const b = Math.round(color[2] * 255);
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
 /*-----------------------------------------------------------------------------------*/
