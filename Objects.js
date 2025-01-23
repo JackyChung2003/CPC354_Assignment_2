@@ -50,10 +50,10 @@ var ambient = 0.5,
   diffuse = 0.5,
   specular = 0.5,
   shininess = 60;
-var lightPos = vec4(1.0, 1.0, 1.0, 1.0); // w = 1.0 for point light initially
-var lightAmbient = vec4(ambient, ambient, ambient, 1.0);
-var lightDiffuse = vec4(diffuse, diffuse, diffuse, 1.0);
-var lightSpecular = vec4(specular, specular, specular, 1.0);
+var lightPos = vec4(2.0, 2.0, 2.0, 1.0); // Move light to a more visible position
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
+var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
+var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
 var materialAmbient = vec4(0.5, 0.5, 1.0, 1.0);
 var materialDiffuse = vec4(0.0, 0.9, 1.0, 1.0);
@@ -61,30 +61,30 @@ var materialSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
 // Add these to your variable declarations
 const cylinderMaterial = {
-  ambient: vec4(0.5, 0.5, 0.5, 1.0),
-  diffuse: vec4(0.5, 0.5, 0.5, 1.0),
-  specular: vec4(0.5, 0.5, 0.5, 1.0),
-  shininess: 60.0,
+  ambient: vec4(0.2, 0.2, 0.2, 1.0), // Dark gray ambient
+  diffuse: vec4(0.8, 0.2, 0.2, 1.0), // Red diffuse
+  specular: vec4(1.0, 1.0, 1.0, 1.0), // White specular
+  shininess: 100.0,
 };
 
 const cubeMaterial = {
-  ambient: vec4(0.5, 0.5, 0.5, 1.0),
-  diffuse: vec4(0.5, 0.5, 0.5, 1.0),
-  specular: vec4(0.5, 0.5, 0.5, 1.0),
-  shininess: 60.0,
+  ambient: vec4(0.2, 0.2, 0.2, 1.0), // Dark gray ambient
+  diffuse: vec4(0.2, 0.8, 0.2, 1.0), // Green diffuse
+  specular: vec4(1.0, 1.0, 1.0, 1.0), // White specular
+  shininess: 100.0,
 };
 
 const sphereMaterial = {
-  ambient: vec4(0.5, 0.5, 0.5, 1.0),
-  diffuse: vec4(0.5, 0.5, 0.5, 1.0),
-  specular: vec4(0.5, 0.5, 0.5, 1.0),
-  shininess: 60.0,
+  ambient: vec4(0.2, 0.2, 0.2, 1.0), // Dark gray ambient
+  diffuse: vec4(0.2, 0.2, 0.8, 1.0), // Blue diffuse
+  specular: vec4(1.0, 1.0, 1.0, 1.0), // White specular
+  shininess: 100.0,
 };
 
 // Add these variables at the top with other declarations
-var eye = vec3(1.0, 1.0, 1.0);
-var at = vec3(0.0, 0.0, 0.0);
-var up = vec3(0.0, 1.0, 0.0);
+var eye = vec3(0.0, 0.0, 5.0); // Moved back to z=5
+var at = vec3(0.0, 0.0, 0.0); // Looking at center
+var up = vec3(0.0, 1.0, 0.0); // Up vector
 
 // Add to variable declarations section
 var isPointLightOn = true;
@@ -580,6 +580,66 @@ function getUIElement() {
     isLightSourceVisible = lightSourceVisible.checked;
     render();
   });
+
+  // Camera Position Controls
+  const cameraEyeX = document.getElementById("camera-eye-x");
+  const cameraEyeY = document.getElementById("camera-eye-y");
+  const cameraEyeZ = document.getElementById("camera-eye-z");
+  const textCameraEyeX = document.getElementById("text-camera-eye-x");
+  const textCameraEyeY = document.getElementById("text-camera-eye-y");
+  const textCameraEyeZ = document.getElementById("text-camera-eye-z");
+
+  // Look At Point Controls
+  const cameraAtX = document.getElementById("camera-at-x");
+  const cameraAtY = document.getElementById("camera-at-y");
+  const cameraAtZ = document.getElementById("camera-at-z");
+  const textCameraAtX = document.getElementById("text-camera-at-x");
+  const textCameraAtY = document.getElementById("text-camera-at-y");
+  const textCameraAtZ = document.getElementById("text-camera-at-z");
+
+  // Camera Position Event Listeners
+  cameraEyeX.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCameraEyeX.innerHTML = value.toFixed(1);
+    eye[0] = value;
+    render();
+  });
+
+  cameraEyeY.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCameraEyeY.innerHTML = value.toFixed(1);
+    eye[1] = value;
+    render();
+  });
+
+  cameraEyeZ.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCameraEyeZ.innerHTML = value.toFixed(1);
+    eye[2] = value;
+    render();
+  });
+
+  // Look At Point Event Listeners
+  cameraAtX.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCameraAtX.innerHTML = value.toFixed(1);
+    at[0] = value;
+    render();
+  });
+
+  cameraAtY.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCameraAtY.innerHTML = value.toFixed(1);
+    at[1] = value;
+    render();
+  });
+
+  cameraAtZ.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCameraAtZ.innerHTML = value.toFixed(1);
+    at[2] = value;
+    render();
+  });
 }
 
 // Configure WebGL Settings
@@ -619,62 +679,36 @@ function configWebGL() {
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  projectionMatrix = ortho(-4, 4, -2.25, 2.25, -5, 5);
+  // Wider perspective with adjusted near and far planes
+  projectionMatrix = perspective(
+    45, // field of view in degrees
+    canvas.width / canvas.height, // aspect ratio
+    0.1, // near plane
+    50.0
+  ); // far plane (increased)
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
-  modelViewMatrix = lookAt(eye, at, up);
-  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+  // Calculate view matrix from camera parameters
+  const viewMatrix = lookAt(eye, at, up);
 
-  // Update light uniforms
-  if (spotLightEnabled) {
-    gl.uniform4fv(
-      gl.getUniformLocation(program, "lightPos"),
-      flatten(spotLightPos)
-    );
-  } else {
-    gl.uniform4fv(
-      gl.getUniformLocation(program, "lightPos"),
-      flatten(lightPos)
-    );
+  // Update light position
+  updateLightPosition();
+
+  // Draw objects with updated materials
+  drawCylinder(viewMatrix);
+  drawCube(viewMatrix);
+  drawSphere(viewMatrix);
+  drawWall(viewMatrix);
+
+  // Draw light source
+  if (isLightSourceVisible) {
+    drawLightSource(lightPos, spotLightEnabled, viewMatrix);
   }
 
-  gl.uniform1i(gl.getUniformLocation(program, "isPointLight"), isPointLight);
-  gl.uniform1i(
-    gl.getUniformLocation(program, "spotLightEnabled"),
-    spotLightEnabled
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "spotDirection"),
-    flatten(spotDirection)
-  );
-  gl.uniform1f(gl.getUniformLocation(program, "spotCutoff"), spotCutoff);
-  gl.uniform1f(gl.getUniformLocation(program, "spotPenumbra"), spotPenumbra);
-
-  ambientProduct = mult(lightAmbient, materialAmbient);
-  diffuseProduct = mult(lightDiffuse, materialDiffuse);
-  specularProduct = mult(lightSpecular, materialSpecular);
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "ambientProduct"),
-    flatten(ambientProduct)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "diffuseProduct"),
-    flatten(diffuseProduct)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "specularProduct"),
-    flatten(specularProduct)
-  );
-  gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
-
-  // Draw light sources
-  if (spotLightEnabled) {
-    drawLightSource(spotLightPos, true);
-  } else {
-    drawLightSource(lightPos, false);
+  // Request next frame if animation is active
+  if (cylinderFlag || cubeFlag || sphereFlag) {
+    requestAnimationFrame(render);
   }
-
-  animUpdate();
 }
 
 // Update the animation frame
@@ -688,44 +722,35 @@ function animUpdate() {
 }
 
 // Draw functions for Cylinder, Cube, and Sphere
-function drawCylinder() {
-  if (cylinderFlag) cylinderTheta[cylinderAxis] += 1;
+function drawCylinder(viewMatrix) {
+  if (cylinderFlag) cylinderTheta[cylinderAxis] += 2.0;
 
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(cylinderTheta[X_AXIS], [1, 0, 0])
-  );
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(cylinderTheta[Y_AXIS], [0, 1, 0])
-  );
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(cylinderTheta[Z_AXIS], [0, 0, 1])
-  );
+  let modelMatrix = mat4();
+  modelMatrix = mult(modelMatrix, translate(-2, 0, 0));
+  modelMatrix = mult(modelMatrix, rotate(cylinderTheta[X_AXIS], [1, 0, 0]));
+  modelMatrix = mult(modelMatrix, rotate(cylinderTheta[Y_AXIS], [0, 1, 0]));
+  modelMatrix = mult(modelMatrix, rotate(cylinderTheta[Z_AXIS], [0, 0, 1]));
+
+  // Combine with view matrix
+  modelViewMatrix = mult(viewMatrix, modelMatrix);
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
+  // Update normal matrix
   nMatrix = normalMatrix(modelViewMatrix);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
-  // Use cylinder-specific material properties
-  const ambientProduct = mult(lightAmbient, cylinderMaterial.ambient);
-  const diffuseProduct = mult(lightDiffuse, cylinderMaterial.diffuse);
-  const specularProduct = mult(lightSpecular, cylinderMaterial.specular);
-
+  // Set material properties
   gl.uniform4fv(
     gl.getUniformLocation(program, "ambientProduct"),
-    flatten(ambientProduct)
+    flatten(mult(lightAmbient, cylinderMaterial.ambient))
   );
   gl.uniform4fv(
     gl.getUniformLocation(program, "diffuseProduct"),
-    flatten(diffuseProduct)
+    flatten(mult(lightDiffuse, cylinderMaterial.diffuse))
   );
   gl.uniform4fv(
     gl.getUniformLocation(program, "specularProduct"),
-    flatten(specularProduct)
+    flatten(mult(lightSpecular, cylinderMaterial.specular))
   );
   gl.uniform1f(
     gl.getUniformLocation(program, "shininess"),
@@ -735,14 +760,16 @@ function drawCylinder() {
   gl.drawArrays(gl.TRIANGLES, 0, cylinderV);
 }
 
-function drawCube() {
-  if (cubeFlag) cubeTheta[cubeAxis] += 1;
+function drawCube(viewMatrix) {
+  if (cubeFlag) cubeTheta[cubeAxis] += 1.0;
 
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0));
-  modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[X_AXIS], [1, 0, 0]));
-  modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[Y_AXIS], [0, 1, 0]));
-  modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[Z_AXIS], [0, 0, 1]));
+  let modelMatrix = mat4();
+  modelMatrix = mult(modelMatrix, translate(0, 0, 0));
+  modelMatrix = mult(modelMatrix, rotate(cubeTheta[X_AXIS], [1, 0, 0]));
+  modelMatrix = mult(modelMatrix, rotate(cubeTheta[Y_AXIS], [0, 1, 0]));
+  modelMatrix = mult(modelMatrix, rotate(cubeTheta[Z_AXIS], [0, 0, 1]));
+
+  modelViewMatrix = mult(viewMatrix, modelMatrix);
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
   nMatrix = normalMatrix(modelViewMatrix);
@@ -773,23 +800,16 @@ function drawCube() {
   gl.drawArrays(gl.TRIANGLES, cylinderV, cubeV);
 }
 
-function drawSphere() {
-  if (sphereFlag) sphereTheta[sphereAxis] += 1;
+function drawSphere(viewMatrix) {
+  if (sphereFlag) sphereTheta[sphereAxis] += 1.0;
 
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(2, 0, 0));
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(sphereTheta[X_AXIS], [1, 0, 0])
-  );
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(sphereTheta[Y_AXIS], [0, 1, 0])
-  );
-  modelViewMatrix = mult(
-    modelViewMatrix,
-    rotate(sphereTheta[Z_AXIS], [0, 0, 1])
-  );
+  let modelMatrix = mat4();
+  modelMatrix = mult(modelMatrix, translate(2, 0, 0));
+  modelMatrix = mult(modelMatrix, rotate(sphereTheta[X_AXIS], [1, 0, 0]));
+  modelMatrix = mult(modelMatrix, rotate(sphereTheta[Y_AXIS], [0, 1, 0]));
+  modelMatrix = mult(modelMatrix, rotate(sphereTheta[Z_AXIS], [0, 0, 1]));
+
+  modelViewMatrix = mult(viewMatrix, modelMatrix);
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
   nMatrix = normalMatrix(modelViewMatrix);
@@ -820,10 +840,12 @@ function drawSphere() {
   gl.drawArrays(gl.TRIANGLES, cylinderV + cubeV, sphereV);
 }
 
-function drawWall() {
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(0, 0, -2)); // Move wall back
-  modelViewMatrix = mult(modelViewMatrix, scale(8, 4.5, 0.01));
+function drawWall(viewMatrix) {
+  let modelMatrix = mat4();
+  modelMatrix = mult(modelMatrix, translate(0, 0, -2));
+  modelMatrix = mult(modelMatrix, scale(8, 4.5, 0.01));
+
+  modelViewMatrix = mult(viewMatrix, modelMatrix);
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
   nMatrix = normalMatrix(modelViewMatrix);
@@ -889,15 +911,77 @@ function rgbToString(color) {
 
 // Add helper function to update light products
 function updateLightProducts() {
-  // Apply intensity to all light components
+  // Scale light components by intensity
   const scaledAmbient = scale(lightIntensity, lightAmbient);
   const scaledDiffuse = scale(lightIntensity, lightDiffuse);
   const scaledSpecular = scale(lightIntensity, lightSpecular);
 
-  // Update products for current material
-  ambientProduct = mult(scaledAmbient, materialAmbient);
-  diffuseProduct = mult(scaledDiffuse, materialDiffuse);
-  specularProduct = mult(scaledSpecular, materialSpecular);
+  // Calculate products for cylinder
+  let cylinderAmbientProduct = mult(scaledAmbient, cylinderMaterial.ambient);
+  let cylinderDiffuseProduct = mult(scaledDiffuse, cylinderMaterial.diffuse);
+  let cylinderSpecularProduct = mult(scaledSpecular, cylinderMaterial.specular);
+
+  // Calculate products for cube
+  let cubeAmbientProduct = mult(scaledAmbient, cubeMaterial.ambient);
+  let cubeDiffuseProduct = mult(scaledDiffuse, cubeMaterial.diffuse);
+  let cubeSpecularProduct = mult(scaledSpecular, cubeMaterial.specular);
+
+  // Calculate products for sphere
+  let sphereAmbientProduct = mult(scaledAmbient, sphereMaterial.ambient);
+  let sphereDiffuseProduct = mult(scaledDiffuse, sphereMaterial.diffuse);
+  let sphereSpecularProduct = mult(scaledSpecular, sphereMaterial.specular);
+
+  // Send to shader
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "cylinderAmbientProduct"),
+    flatten(cylinderAmbientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "cylinderDiffuseProduct"),
+    flatten(cylinderDiffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "cylinderSpecularProduct"),
+    flatten(cylinderSpecularProduct)
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "cylinderShininess"),
+    cylinderMaterial.shininess
+  );
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "cubeAmbientProduct"),
+    flatten(cubeAmbientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "cubeDiffuseProduct"),
+    flatten(cubeDiffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "cubeSpecularProduct"),
+    flatten(cubeSpecularProduct)
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "cubeShininess"),
+    cubeMaterial.shininess
+  );
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "sphereAmbientProduct"),
+    flatten(sphereAmbientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "sphereDiffuseProduct"),
+    flatten(sphereDiffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "sphereSpecularProduct"),
+    flatten(sphereSpecularProduct)
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "sphereShininess"),
+    sphereMaterial.shininess
+  );
 }
 
 // Add function to create light source geometries
@@ -979,33 +1063,21 @@ function createLightSourceGeometries() {
 }
 
 // Update drawLightSource function
-function drawLightSource(position, isSpotLight) {
+function drawLightSource(position, isSpotLight, viewMatrix) {
   if (!isLightSourceVisible) return;
 
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(
-    modelViewMatrix,
+  let modelMatrix = mat4();
+  modelMatrix = mult(
+    modelMatrix,
     translate(position[0], position[1], position[2])
   );
+  modelMatrix = mult(modelMatrix, scale(0.1, 0.1, 0.1));
 
-  if (isSpotLight) {
-    // Calculate rotation matrix to align cone with spot direction
-    const up = vec3(0.0, 1.0, 0.0);
-    const spotDir = normalize(
-      vec3(spotDirection[0], spotDirection[1], spotDirection[2])
-    );
-    const rotationAxis = cross(up, spotDir);
-    const rotationAngle = Math.acos(dot(up, spotDir));
-
-    if (length(rotationAxis) > 0.001) {
-      modelViewMatrix = mult(
-        modelViewMatrix,
-        rotate((rotationAngle * 180) / Math.PI, rotationAxis)
-      );
-    }
-  }
-
+  modelViewMatrix = mult(viewMatrix, modelMatrix);
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+
+  nMatrix = normalMatrix(modelViewMatrix);
+  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
   // Use emissive material for light source
   const lightMaterial = {
@@ -1042,6 +1114,14 @@ function drawLightSource(position, isSpotLight) {
   } else {
     gl.drawArrays(gl.TRIANGLES, 0, lightSourcePoints.length);
   }
+}
+
+// Add this function to update light position
+function updateLightPosition() {
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "lightPosition"),
+    flatten(lightPos)
+  );
 }
 
 /*-----------------------------------------------------------------------------------*/

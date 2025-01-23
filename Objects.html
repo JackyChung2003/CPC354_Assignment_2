@@ -14,83 +14,65 @@
 
     <!-- Define the vertex shader -->
     <script id="vertex-shader" type="x-shader/x-vertex">
-      // Vertex Shader Code
-      uniform mat4 projectionMatrix;
-      uniform mat4 modelViewMatrix;
-      uniform mat3 normalMatrix;
-      uniform vec4 ambientProduct;
-      uniform vec4 diffuseProduct;
-      uniform vec4 specularProduct;
-      uniform vec4 lightPos;
-      uniform float shininess;
-      uniform bool isPointLight;
-      uniform bool spotLightEnabled;
-      uniform vec4 spotDirection;
-      uniform float spotCutoff;
-      uniform float spotPenumbra;
-
       attribute vec4 vPosition;
       attribute vec3 vNormal;
 
-      varying vec4 fColor;
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+      uniform mat3 normalMatrix;
+      uniform vec4 lightPosition;    // Changed from lightPos
+
+      varying vec3 N, L, E;    // Added varying variables
 
       void main() {
+          // Transform vertex position into eye coordinates
           vec3 pos = (modelViewMatrix * vPosition).xyz;
-          vec3 L;
 
-          // Calculate light direction based on light type
-          if (isPointLight) {
-              L = normalize(lightPos.xyz - pos);
-          } else {
-              L = normalize(lightPos.xyz);
-          }
+          // Transform vertex normal into eye coordinates
+          N = normalize(normalMatrix * vNormal);
 
-          vec3 E = -normalize(pos);
-          vec3 H = normalize(L + E);
-          vec3 N = normalize(normalMatrix * vNormal);
+          // Vector from vertex to light source
+          L = normalize(lightPosition.xyz - pos);
 
-          // Calculate basic lighting
-          vec4 ambient = ambientProduct;
-          float Kd = max(dot(L, N), 0.0);
-          vec4 diffuse = Kd * diffuseProduct;
-          float Ks = pow(max(dot(N, H), 0.0), shininess);
-          vec4 specular = Ks * specularProduct;
-
-          // Apply spot light effect if enabled
-          if (spotLightEnabled) {
-              vec3 spotDir = normalize(spotDirection.xyz);
-              float spotEffect = dot(-L, spotDir);
-
-              // Convert angles to radians
-              float spotCutoffRadians = radians(spotCutoff);
-              float outerCutoff = radians(spotCutoff + spotPenumbra);
-
-              // Smooth transition between inner and outer cone
-              float epsilon = cos(spotCutoffRadians) - cos(outerCutoff);
-              float intensity = clamp((spotEffect - cos(outerCutoff)) / epsilon, 0.0, 1.0);
-
-              // Apply spot light effect with smooth falloff
-              diffuse *= intensity;
-              specular *= intensity;
-          }
-
-          if (dot(L, N) < 0.0) {
-              specular = vec4(0.0);
-          }
+          // Vector from vertex to eye
+          E = normalize(-pos);
 
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-          fColor = ambient + diffuse + specular;
-          fColor.a = 1.0;
       }
     </script>
 
     <!-- Define the fragment shader -->
     <script id="fragment-shader" type="x-shader/x-fragment">
       precision mediump float;
-      varying vec4 fColor;
+
+      varying vec3 N, L, E;
+      uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+      uniform float shininess;
 
       void main() {
-          gl_FragColor = fColor;
+          // Normalize the interpolated vectors
+          vec3 N = normalize(N);
+          vec3 L = normalize(L);
+          vec3 E = normalize(E);
+
+          // Compute the halfway vector
+          vec3 H = normalize(L + E);
+
+          // Compute terms in the illumination equation
+          vec4 ambient = ambientProduct;
+
+          float Kd = max(dot(L, N), 0.0);
+          vec4 diffuse = Kd * diffuseProduct;
+
+          float Ks = pow(max(dot(N, H), 0.0), shininess);
+          vec4 specular = Ks * specularProduct;
+
+          if(dot(L, N) < 0.0) {
+              specular = vec4(0.0, 0.0, 0.0, 1.0);
+          }
+
+          gl_FragColor = ambient + diffuse + specular;
+          gl_FragColor.a = 1.0;
       }
     </script>
   </head>
@@ -792,6 +774,127 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add this inside the controls-container div -->
+        <div class="controls-panel">
+          <h3>Camera Controls</h3>
+
+          <!-- Camera Position -->
+          <div class="control-group">
+            <h4>Camera Position</h4>
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Eye X
+                <br />-5<input
+                  class="slide"
+                  id="camera-eye-x"
+                  type="range"
+                  min="-5"
+                  max="5"
+                  step="0.1"
+                  value="1.0"
+                />5
+              </div>
+              <div class="textbox2">
+                <p id="text-camera-eye-x">1.0</p>
+              </div>
+            </div>
+
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Eye Y
+                <br />-5<input
+                  class="slide"
+                  id="camera-eye-y"
+                  type="range"
+                  min="-5"
+                  max="5"
+                  step="0.1"
+                  value="1.0"
+                />5
+              </div>
+              <div class="textbox2">
+                <p id="text-camera-eye-y">1.0</p>
+              </div>
+            </div>
+
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Eye Z
+                <br />-10<input
+                  class="slide"
+                  id="camera-eye-z"
+                  type="range"
+                  min="-10"
+                  max="10"
+                  step="0.1"
+                  value="5.0"
+                />10
+              </div>
+              <div class="textbox2">
+                <p id="text-camera-eye-z">5.0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Look At Point -->
+          <div class="control-group">
+            <h4>Look At Point</h4>
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                At X
+                <br />-5<input
+                  class="slide"
+                  id="camera-at-x"
+                  type="range"
+                  min="-5"
+                  max="5"
+                  step="0.1"
+                  value="0.0"
+                />5
+              </div>
+              <div class="textbox2">
+                <p id="text-camera-at-x">0.0</p>
+              </div>
+            </div>
+
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                At Y
+                <br />-5<input
+                  class="slide"
+                  id="camera-at-y"
+                  type="range"
+                  min="-5"
+                  max="5"
+                  step="0.1"
+                  value="0.0"
+                />5
+              </div>
+              <div class="textbox2">
+                <p id="text-camera-at-y">0.0</p>
+              </div>
+            </div>
+
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                At Z
+                <br />-5<input
+                  class="slide"
+                  id="camera-at-z"
+                  type="range"
+                  min="-5"
+                  max="5"
+                  step="0.1"
+                  value="0.0"
+                />5
+              </div>
+              <div class="textbox2">
+                <p id="text-camera-at-z">0.0</p>
               </div>
             </div>
           </div>
