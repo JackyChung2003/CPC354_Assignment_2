@@ -37,24 +37,11 @@ body {
 
 .controls-panel {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 10px;
   padding: 15px;
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
-}
-
-.object-container {
-  flex: 1;
-  background-color: #022639;
-  padding: 15px;
-  border-radius: 8px;
-}
-
-.light-controls {
-  background-color: #022639;
-  padding: 15px;
-  border-radius: 8px;
-  min-width: 200px;
 }
 
 .tab-buttons {
@@ -281,11 +268,8 @@ body {
   }
 
   .controls-panel {
-    flex-direction: column;
-  }
-
-  .light-controls {
-    min-width: unset;
+    padding: 8px;
+    gap: 8px;
   }
 
   .object-controls {
@@ -299,12 +283,4 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-.light-controls h3 {
-  color: #ffffff;
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.2rem;
-  text-align: center;
 }

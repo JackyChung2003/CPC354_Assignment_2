@@ -328,38 +328,6 @@ function getUIElement() {
     debouncedRecompute();
   });
 
-  // Light position controls
-  const sliderLightX = document.getElementById("slider-light-x");
-  const sliderLightY = document.getElementById("slider-light-y");
-  const sliderLightZ = document.getElementById("slider-light-z");
-  const textLightX = document.getElementById("text-light-x");
-  const textLightY = document.getElementById("text-light-y");
-  const textLightZ = document.getElementById("text-light-z");
-
-  // Light X position listener
-  sliderLightX.addEventListener("input", (e) => {
-    const value = parseFloat(e.target.value);
-    textLightX.innerHTML = value.toFixed(1);
-    lightPos[0] = value;
-    render(); // Call render directly for smoother light updates
-  });
-
-  // Light Y position listener
-  sliderLightY.addEventListener("input", (e) => {
-    const value = parseFloat(e.target.value);
-    textLightY.innerHTML = value.toFixed(1);
-    lightPos[1] = value;
-    render(); // Call render directly for smoother light updates
-  });
-
-  // Light Z position listener
-  sliderLightZ.addEventListener("input", (e) => {
-    const value = parseFloat(e.target.value);
-    textLightZ.innerHTML = value.toFixed(1);
-    lightPos[2] = value;
-    render(); // Call render directly for smoother light updates
-  });
-
   // Add debounce function to prevent too many recomputes
   const debouncedRecompute = debounce(() => {
     recompute();
