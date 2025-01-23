@@ -48,8 +48,7 @@ var pointsArray = [],
 var ambientProduct, diffuseProduct, specularProduct;
 var ambient = 0.5,
   diffuse = 0.5,
-  specular = 0.5,
-  shininess = 60;
+  specular = 0.5;
 var lightPos = vec4(0.0, 2.0, 0.0, 1.0);
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
 var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
@@ -86,7 +85,7 @@ var materials = {
     ambient: vec4(0.5, 0.0, 0.0, 1.0), // Red-ish
     diffuse: vec4(1.0, 0.0, 0.0, 1.0),
     specular: vec4(1.0, 1.0, 1.0, 1.0),
-    shininess: 30,
+    shininess: 30.0,
     ambientCoef: 0.5,
     diffuseCoef: 0.8,
     specularCoef: 0.5,
@@ -95,7 +94,7 @@ var materials = {
     ambient: vec4(0.0, 0.5, 0.0, 1.0), // Green-ish
     diffuse: vec4(0.0, 1.0, 0.0, 1.0),
     specular: vec4(1.0, 1.0, 1.0, 1.0),
-    shininess: 30,
+    shininess: 30.0,
     ambientCoef: 0.5,
     diffuseCoef: 0.8,
     specularCoef: 0.5,
@@ -104,7 +103,7 @@ var materials = {
     ambient: vec4(0.0, 0.0, 0.5, 1.0), // Blue-ish
     diffuse: vec4(0.0, 0.0, 1.0, 1.0),
     specular: vec4(1.0, 1.0, 1.0, 1.0),
-    shininess: 30,
+    shininess: 30.0,
     ambientCoef: 0.5,
     diffuseCoef: 0.8,
     specularCoef: 0.5,
@@ -113,7 +112,7 @@ var materials = {
     ambient: vec4(0.5, 0.5, 0.5, 1.0), // Gray
     diffuse: vec4(0.8, 0.8, 0.8, 1.0),
     specular: vec4(1.0, 1.0, 1.0, 1.0),
-    shininess: 30,
+    shininess: 30.0,
     ambientCoef: 0.5,
     diffuseCoef: 0.8,
     specularCoef: 0.5,
@@ -270,6 +269,15 @@ window.onload = function init() {
     document.getElementById("text-material-shininess").innerHTML = this.value;
     render();
   };
+
+  // Add shininess control handler
+  document
+    .getElementById("material-shininess")
+    .addEventListener("input", function () {
+      materials[currentObject].shininess = parseFloat(this.value);
+      document.getElementById("text-material-shininess").innerHTML = this.value;
+      render();
+    });
 
   updateMaterialControls();
 };
@@ -470,7 +478,6 @@ function render() {
     flatten(specularProduct)
   );
   gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
-  gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
 
   // Update light uniforms
   gl.uniform1i(

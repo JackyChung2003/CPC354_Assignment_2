@@ -388,25 +388,6 @@
               <input type="color" id="specular-color" value="#808080" />
             </div>
           </div>
-
-          <!-- Shininess Control -->
-          <div class="param-panel horizontal-align">
-            <div class="slider">
-              Shininess
-              <br />1<input
-                class="slide"
-                id="slider-shininess"
-                type="range"
-                min="1"
-                max="100"
-                step="1"
-                value="30"
-              />100
-            </div>
-            <div class="textbox">
-              <p id="text-shininess">30</p>
-            </div>
-          </div>
         </div>
 
         <!-- Add Camera Controls Section -->
@@ -606,6 +587,7 @@
             </div>
           </div>
 
+          <!-- Add this inside the Material Properties Section, after the specular controls -->
           <div class="param-panel horizontal-align">
             <div class="slider">
               Shininess
