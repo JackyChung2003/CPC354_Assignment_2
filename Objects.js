@@ -75,6 +75,11 @@ var spotCutoff = 45.0;
 var pointLightEnabled = true;
 var spotLightEnabled = true;
 
+// Add camera variables
+var eye = vec3(0.0, 0.0, 5.0); // Camera position
+var at = vec3(0.0, 0.0, 0.0); // Look at point
+var up = vec3(0.0, 1.0, 0.0); // Up vector
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -136,6 +141,43 @@ window.onload = function init() {
 
   document.getElementById("spot-light-toggle").onchange = function () {
     spotLightEnabled = this.checked;
+    render();
+  };
+
+  // Add camera control handlers
+  document.getElementById("camera-pos-x").oninput = function () {
+    eye[0] = parseFloat(this.value);
+    document.getElementById("text-camera-pos-x").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("camera-pos-y").oninput = function () {
+    eye[1] = parseFloat(this.value);
+    document.getElementById("text-camera-pos-y").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("camera-pos-z").oninput = function () {
+    eye[2] = parseFloat(this.value);
+    document.getElementById("text-camera-pos-z").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("look-at-x").oninput = function () {
+    at[0] = parseFloat(this.value);
+    document.getElementById("text-look-at-x").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("look-at-y").oninput = function () {
+    at[1] = parseFloat(this.value);
+    document.getElementById("text-look-at-y").innerHTML = this.value;
+    render();
+  };
+
+  document.getElementById("look-at-z").oninput = function () {
+    at[2] = parseFloat(this.value);
+    document.getElementById("text-look-at-z").innerHTML = this.value;
     render();
   };
 };
@@ -306,8 +348,19 @@ function configWebGL() {
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  projectionMatrix = ortho(-4, 4, -2.25, 2.25, -5, 5);
+  // Update view matrix using lookAt
+  modelViewMatrix = lookAt(eye, at, up);
+
+  // Update projection matrix
+  projectionMatrix = perspective(45, canvas.width / canvas.height, 0.1, 100.0);
+
+  // Send matrices to shaders
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+
+  // Calculate and update normal matrix
+  nMatrix = normalMatrix(modelViewMatrix, true);
+  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
   ambientProduct = mult(lightAmbient, materialAmbient);
   diffuseProduct = mult(lightDiffuse, materialDiffuse);
@@ -362,48 +415,45 @@ function render() {
 
 // Draw functions for Cylinder, Cube, and Sphere
 function drawCylinder() {
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
-  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+  var mvMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
-  nMatrix = normalMatrix(modelViewMatrix);
+  var nMatrix = normalMatrix(mvMatrix, true);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
   gl.drawArrays(gl.TRIANGLES, 0, cylinderV);
 }
 
 function drawCube() {
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0));
-  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+  var mvMatrix = mult(modelViewMatrix, translate(0, 0, 0));
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
-  nMatrix = normalMatrix(modelViewMatrix);
+  var nMatrix = normalMatrix(mvMatrix, true);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
   gl.drawArrays(gl.TRIANGLES, cylinderV, cubeV);
 }
 
 function drawSphere() {
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(2, 0, 0));
-  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+  var mvMatrix = mult(modelViewMatrix, translate(2, 0, 0));
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
-  nMatrix = normalMatrix(modelViewMatrix);
+  var nMatrix = normalMatrix(mvMatrix, true);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
   gl.drawArrays(gl.TRIANGLES, cylinderV + cubeV, sphereV);
 }
 
 function drawWall() {
-  modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0)); // Position wall at far Z boundary
-  modelViewMatrix = mult(modelViewMatrix, scale(8, 4.5, 0.01)); // Adjust scale to fit scene
-  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+  var mvMatrix = mult(
+    modelViewMatrix,
+    mult(translate(0, 0, -2), scale(8, 4.5, 0.01))
+  );
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
-  nMatrix = normalMatrix(modelViewMatrix);
+  var nMatrix = normalMatrix(mvMatrix, true);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
-  // Use the correct offset for wall vertices
   gl.drawArrays(gl.TRIANGLES, cylinderV + cubeV + sphereV, wallV);
 }
 
@@ -445,6 +495,60 @@ function openTab(evt, tabName) {
 
   // Don't change light states when switching tabs
   render();
+}
+
+// Helper function to calculate normal matrix
+function normalMatrix(m, flag) {
+  var m3 = mat3();
+
+  // Extract the 3x3 portion of the modelView matrix
+  m3[0][0] = m[0][0];
+  m3[0][1] = m[0][1];
+  m3[0][2] = m[0][2];
+  m3[1][0] = m[1][0];
+  m3[1][1] = m[1][1];
+  m3[1][2] = m[1][2];
+  m3[2][0] = m[2][0];
+  m3[2][1] = m[2][1];
+  m3[2][2] = m[2][2];
+
+  if (flag) {
+    // Compute inverse transpose
+    return inverse3(transpose(m3));
+  }
+  return m3;
+}
+
+// Helper function to compute inverse of 3x3 matrix
+function inverse3(m) {
+  var a00 = m[0][0],
+    a01 = m[0][1],
+    a02 = m[0][2];
+  var a10 = m[1][0],
+    a11 = m[1][1],
+    a12 = m[1][2];
+  var a20 = m[2][0],
+    a21 = m[2][1],
+    a22 = m[2][2];
+
+  var det =
+    a00 * (a11 * a22 - a12 * a21) -
+    a01 * (a10 * a22 - a12 * a20) +
+    a02 * (a10 * a21 - a11 * a20);
+
+  var result = mat3();
+
+  result[0][0] = (a11 * a22 - a21 * a12) / det;
+  result[0][1] = (a02 * a21 - a01 * a22) / det;
+  result[0][2] = (a01 * a12 - a02 * a11) / det;
+  result[1][0] = (a12 * a20 - a10 * a22) / det;
+  result[1][1] = (a00 * a22 - a02 * a20) / det;
+  result[1][2] = (a10 * a02 - a00 * a12) / det;
+  result[2][0] = (a10 * a21 - a20 * a11) / det;
+  result[2][1] = (a20 * a01 - a00 * a21) / det;
+  result[2][2] = (a00 * a11 - a10 * a01) / det;
+
+  return result;
 }
 
 /*-----------------------------------------------------------------------------------*/
