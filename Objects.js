@@ -59,6 +59,13 @@ var materialAmbient = vec4(0.5, 0.5, 1.0, 1.0);
 var materialDiffuse = vec4(0.0, 0.9, 1.0, 1.0);
 var materialSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
+// Add new UI element variables
+var lightTypeSelect,
+  ambientColorPicker,
+  diffuseColorPicker,
+  specularColorPicker;
+var sliderLightX, sliderLightY, sliderLightZ;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -98,6 +105,59 @@ window.onload = function init() {
 // Retrieve all elements from HTML and store in the corresponding variables
 function getUIElement() {
   canvas = document.getElementById("gl-canvas");
+
+  // Get new lighting control elements
+  lightTypeSelect = document.getElementById("light-type");
+  ambientColorPicker = document.getElementById("ambient-color");
+  diffuseColorPicker = document.getElementById("diffuse-color");
+  specularColorPicker = document.getElementById("specular-color");
+
+  sliderLightX = document.getElementById("slider-light-x");
+  sliderLightY = document.getElementById("slider-light-y");
+  sliderLightZ = document.getElementById("slider-light-z");
+
+  // Add event listeners for light controls
+  lightTypeSelect.onchange = function () {
+    lightPos[3] = this.value === "directional" ? 0.0 : 1.0;
+    render();
+  };
+
+  sliderLightX.oninput = function () {
+    lightPos[0] = parseFloat(this.value);
+    document.getElementById("text-light-x").innerHTML = this.value;
+    render();
+  };
+
+  sliderLightY.oninput = function () {
+    lightPos[1] = parseFloat(this.value);
+    document.getElementById("text-light-y").innerHTML = this.value;
+    render();
+  };
+
+  sliderLightZ.oninput = function () {
+    lightPos[2] = parseFloat(this.value);
+    document.getElementById("text-light-z").innerHTML = this.value;
+    render();
+  };
+
+  // Color picker event handlers
+  ambientColorPicker.oninput = function () {
+    const color = hexToRgb(this.value);
+    lightAmbient = vec4(color.r, color.g, color.b, 1.0);
+    render();
+  };
+
+  diffuseColorPicker.oninput = function () {
+    const color = hexToRgb(this.value);
+    lightDiffuse = vec4(color.r, color.g, color.b, 1.0);
+    render();
+  };
+
+  specularColorPicker.oninput = function () {
+    const color = hexToRgb(this.value);
+    lightSpecular = vec4(color.r, color.g, color.b, 1.0);
+    render();
+  };
 }
 
 // Configure WebGL Settings
@@ -215,6 +275,18 @@ function drawWall() {
 function concatData(point, normal) {
   pointsArray = pointsArray.concat(point);
   normalsArray = normalsArray.concat(normal);
+}
+
+// Add utility function for converting hex colors to RGB
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16) / 255,
+        g: parseInt(result[2], 16) / 255,
+        b: parseInt(result[3], 16) / 255,
+      }
+    : null;
 }
 
 /*-----------------------------------------------------------------------------------*/

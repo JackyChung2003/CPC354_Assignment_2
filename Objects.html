@@ -79,5 +79,116 @@
         Error: your browser doesn't support the HTML5 canvas element
       </canvas>
     </div>
+
+    <!-- Panel for lighting controls -->
+    <div class="panel vertical-align">
+      <!-- Light Type Selection -->
+      <div class="param-panel horizontal-align">
+        <div class="slider">
+          Light Type
+          <select id="light-type" class="select-box">
+            <option value="directional">Directional Light</option>
+            <option value="point">Point Light</option>
+            <option value="spot">Spot Light</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Light Position Controls -->
+      <div class="param-panel horizontal-align">
+        <div class="slider">
+          Light Position X
+          <br />-1<input
+            class="slide"
+            id="slider-light-x"
+            type="range"
+            min="-1"
+            max="1"
+            step="0.1"
+            value="1"
+          />1
+        </div>
+        <div class="textbox">
+          <p id="text-light-x">1.0</p>
+        </div>
+      </div>
+
+      <div class="param-panel horizontal-align">
+        <div class="slider">
+          Light Position Y
+          <br />-1<input
+            class="slide"
+            id="slider-light-y"
+            type="range"
+            min="-1"
+            max="1"
+            step="0.1"
+            value="1"
+          />1
+        </div>
+        <div class="textbox">
+          <p id="text-light-y">1.0</p>
+        </div>
+      </div>
+
+      <div class="param-panel horizontal-align">
+        <div class="slider">
+          Light Position Z
+          <br />-1<input
+            class="slide"
+            id="slider-light-z"
+            type="range"
+            min="-1"
+            max="1"
+            step="0.1"
+            value="1"
+          />1
+        </div>
+        <div class="textbox">
+          <p id="text-light-z">1.0</p>
+        </div>
+      </div>
+
+      <!-- Light Color Controls -->
+      <div class="param-panel horizontal-align">
+        <div class="slider">
+          Ambient Color
+          <input type="color" id="ambient-color" value="#808080" />
+        </div>
+      </div>
+
+      <div class="param-panel horizontal-align">
+        <div class="slider">
+          Diffuse Color
+          <input type="color" id="diffuse-color" value="#808080" />
+        </div>
+      </div>
+
+      <div class="param-panel horizontal-align">
+        <div class="slider">
+          Specular Color
+          <input type="color" id="specular-color" value="#808080" />
+        </div>
+      </div>
+
+      <!-- Shininess Control -->
+      <div class="param-panel horizontal-align">
+        <div class="slider">
+          Shininess
+          <br />1<input
+            class="slide"
+            id="slider-shininess"
+            type="range"
+            min="1"
+            max="100"
+            step="1"
+            value="30"
+          />100
+        </div>
+        <div class="textbox">
+          <p id="text-shininess">30</p>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
