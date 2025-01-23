@@ -64,18 +64,21 @@ const cylinderMaterial = {
   ambient: vec4(0.5, 0.5, 0.5, 1.0),
   diffuse: vec4(0.5, 0.5, 0.5, 1.0),
   specular: vec4(0.5, 0.5, 0.5, 1.0),
+  shininess: 60.0,
 };
 
 const cubeMaterial = {
   ambient: vec4(0.5, 0.5, 0.5, 1.0),
   diffuse: vec4(0.5, 0.5, 0.5, 1.0),
   specular: vec4(0.5, 0.5, 0.5, 1.0),
+  shininess: 60.0,
 };
 
 const sphereMaterial = {
   ambient: vec4(0.5, 0.5, 0.5, 1.0),
   diffuse: vec4(0.5, 0.5, 0.5, 1.0),
   specular: vec4(0.5, 0.5, 0.5, 1.0),
+  shininess: 60.0,
 };
 
 /*-----------------------------------------------------------------------------------*/
@@ -285,6 +288,41 @@ function getUIElement() {
     debouncedRecompute();
   });
 
+  // Cylinder shininess control
+  const cylinderShininess = document.getElementById("cylinder-shininess");
+  const textCylinderShininess = document.getElementById(
+    "text-cylinder-shininess"
+  );
+
+  cylinderShininess.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCylinderShininess.innerHTML = value.toFixed(1);
+    cylinderMaterial.shininess = value;
+    debouncedRecompute();
+  });
+
+  // Cube shininess control
+  const cubeShininess = document.getElementById("cube-shininess");
+  const textCubeShininess = document.getElementById("text-cube-shininess");
+
+  cubeShininess.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textCubeShininess.innerHTML = value.toFixed(1);
+    cubeMaterial.shininess = value;
+    debouncedRecompute();
+  });
+
+  // Sphere shininess control
+  const sphereShininess = document.getElementById("sphere-shininess");
+  const textSphereShininess = document.getElementById("text-sphere-shininess");
+
+  sphereShininess.addEventListener("input", (e) => {
+    const value = parseFloat(e.target.value);
+    textSphereShininess.innerHTML = value.toFixed(1);
+    sphereMaterial.shininess = value;
+    debouncedRecompute();
+  });
+
   // Add debounce function to prevent too many recomputes
   const debouncedRecompute = debounce(() => {
     recompute();
@@ -397,7 +435,7 @@ function drawCylinder() {
   nMatrix = normalMatrix(modelViewMatrix);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
-  // Update material products
+  // Use cylinder-specific material properties
   const ambientProduct = mult(lightAmbient, cylinderMaterial.ambient);
   const diffuseProduct = mult(lightDiffuse, cylinderMaterial.diffuse);
   const specularProduct = mult(lightSpecular, cylinderMaterial.specular);
@@ -413,6 +451,10 @@ function drawCylinder() {
   gl.uniform4fv(
     gl.getUniformLocation(program, "specularProduct"),
     flatten(specularProduct)
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "shininess"),
+    cylinderMaterial.shininess
   );
 
   gl.drawArrays(gl.TRIANGLES, 0, cylinderV);
@@ -430,6 +472,28 @@ function drawCube() {
 
   nMatrix = normalMatrix(modelViewMatrix);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
+
+  // Use cube-specific material properties
+  const ambientProduct = mult(lightAmbient, cubeMaterial.ambient);
+  const diffuseProduct = mult(lightDiffuse, cubeMaterial.diffuse);
+  const specularProduct = mult(lightSpecular, cubeMaterial.specular);
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(ambientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(diffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(specularProduct)
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "shininess"),
+    cubeMaterial.shininess
+  );
 
   gl.drawArrays(gl.TRIANGLES, cylinderV, cubeV);
 }
@@ -456,19 +520,58 @@ function drawSphere() {
   nMatrix = normalMatrix(modelViewMatrix);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
+  // Use sphere-specific material properties
+  const ambientProduct = mult(lightAmbient, sphereMaterial.ambient);
+  const diffuseProduct = mult(lightDiffuse, sphereMaterial.diffuse);
+  const specularProduct = mult(lightSpecular, sphereMaterial.specular);
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(ambientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(diffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(specularProduct)
+  );
+  gl.uniform1f(
+    gl.getUniformLocation(program, "shininess"),
+    sphereMaterial.shininess
+  );
+
   gl.drawArrays(gl.TRIANGLES, cylinderV + cubeV, sphereV);
 }
 
 function drawWall() {
   modelViewMatrix = mat4();
-  modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0)); // Position wall at far Z boundary
-  modelViewMatrix = mult(modelViewMatrix, scale(8, 4.5, 0.01)); // Adjust scale to fit scene
+  modelViewMatrix = mult(modelViewMatrix, translate(0, 0, -2)); // Move wall back
+  modelViewMatrix = mult(modelViewMatrix, scale(8, 4.5, 0.01));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
   nMatrix = normalMatrix(modelViewMatrix);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
-  // Use the correct offset for wall vertices
+  // Use default material for wall
+  const ambientProduct = mult(lightAmbient, materialAmbient);
+  const diffuseProduct = mult(lightDiffuse, materialDiffuse);
+  const specularProduct = mult(lightSpecular, materialSpecular);
+
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "ambientProduct"),
+    flatten(ambientProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "diffuseProduct"),
+    flatten(diffuseProduct)
+  );
+  gl.uniform4fv(
+    gl.getUniformLocation(program, "specularProduct"),
+    flatten(specularProduct)
+  );
+
   gl.drawArrays(gl.TRIANGLES, cylinderV + cubeV + sphereV, wallV);
 }
 
