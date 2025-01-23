@@ -115,19 +115,6 @@ body {
   margin-bottom: 8px;
 }
 
-.anim-btn {
-  margin: 10px 0px 5px 0px;
-  height: 35px;
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #ffffff;
-  background-color: #4a4e69;
-  border: 2px solid #ffffff;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
 .checkText {
   color: #ffffff;
   font-size: 0.95rem;
@@ -207,57 +194,6 @@ body {
   font-size: 16px;
   line-height: 1;
   margin-top: 8px;
-}
-
-.anim-btn:hover {
-  background-color: #6f7396;
-}
-
-.anim-btn:active {
-  background-color: #21ff94;
-  color: #000000;
-}
-
-.anim-btn:disabled {
-  animation: none;
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-@keyframes bounce {
-  0%,
-  20%,
-  60%,
-  100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-10px);
-  }
-  80% {
-    transform: translateY(-5px);
-  }
-}
-
-/* Added styles for Sphere Controls */
-#sphere-controls {
-  margin-top: 20px;
-  width: 100%;
-  text-align: center;
-}
-
-.sphere-controls .checkText {
-  color: #ffa69e;
-}
-
-.sphere-controls .anim-btn {
-  background: #b5838d;
-  border-color: #ffddd2;
-}
-
-.sphere-controls .anim-btn:hover {
-  background: #ffddd2;
-  color: #6d6875;
 }
 
 @media (max-width: 1024px) {

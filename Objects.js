@@ -168,19 +168,16 @@ function getUIElement() {
   cylinderX = document.getElementById("cylinder-x");
   cylinderY = document.getElementById("cylinder-y");
   cylinderZ = document.getElementById("cylinder-z");
-  cylinderBtn = document.getElementById("cylinder-btn");
 
   // Cube controls
   cubeX = document.getElementById("cube-x");
   cubeY = document.getElementById("cube-y");
   cubeZ = document.getElementById("cube-z");
-  cubeBtn = document.getElementById("cube-btn");
 
   // Sphere controls
   sphereX = document.getElementById("sphere-x");
   sphereY = document.getElementById("sphere-y");
   sphereZ = document.getElementById("sphere-z");
-  sphereBtn = document.getElementById("sphere-btn");
 
   // Event listeners for Cylinder
   cylinderX.onchange = () => {
@@ -191,9 +188,6 @@ function getUIElement() {
   };
   cylinderZ.onchange = () => {
     if (cylinderZ.checked) cylinderAxis = Z_AXIS;
-  };
-  cylinderBtn.onclick = () => {
-    cylinderFlag = !cylinderFlag;
   };
 
   // Event listeners for Cube
@@ -206,9 +200,6 @@ function getUIElement() {
   cubeZ.onchange = () => {
     if (cubeZ.checked) cubeAxis = Z_AXIS;
   };
-  cubeBtn.onclick = () => {
-    cubeFlag = !cubeFlag;
-  };
 
   // Event listeners for Sphere
   sphereX.onchange = () => {
@@ -219,9 +210,6 @@ function getUIElement() {
   };
   sphereZ.onchange = () => {
     if (sphereZ.checked) sphereAxis = Z_AXIS;
-  };
-  sphereBtn.onclick = () => {
-    sphereFlag = !sphereFlag;
   };
 
   // Cylinder lighting controls
@@ -689,8 +677,6 @@ function animUpdate() {
 
 // Draw functions for Cylinder, Cube, and Sphere
 function drawCylinder() {
-  if (cylinderFlag) cylinderTheta[cylinderAxis] += 1;
-
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
   modelViewMatrix = mult(
@@ -736,8 +722,6 @@ function drawCylinder() {
 }
 
 function drawCube() {
-  if (cubeFlag) cubeTheta[cubeAxis] += 1;
-
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(0, 0, 0));
   modelViewMatrix = mult(modelViewMatrix, rotate(cubeTheta[X_AXIS], [1, 0, 0]));
@@ -774,8 +758,6 @@ function drawCube() {
 }
 
 function drawSphere() {
-  if (sphereFlag) sphereTheta[sphereAxis] += 1;
-
   modelViewMatrix = mat4();
   modelViewMatrix = mult(modelViewMatrix, translate(2, 0, 0));
   modelViewMatrix = mult(
