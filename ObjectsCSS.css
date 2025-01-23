@@ -190,3 +190,12 @@ input[type="color"] {
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 5px;
 }
+
+.section-title {
+  color: #ffffff;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #00b4d8;
+}
