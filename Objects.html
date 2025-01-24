@@ -20,12 +20,19 @@
       uniform mat4 modelViewMatrix;
       uniform mat4 projectionMatrix;
       uniform mat3 normalMatrix;
+      uniform vec4 materialAmbient;
 
       varying vec3 fNormal;
       varying vec3 fPosition;
 
       void main() {
-          fNormal = normalize(normalMatrix * vNormal);
+          // Check if this is the light source
+          if (materialAmbient.r >= 1.0 && materialAmbient.g >= 1.0 && materialAmbient.b >= 1.0) {
+              fNormal = vec3(1.0, 1.0, 1.0);
+          } else {
+              fNormal = normalize(normalMatrix * vNormal);
+          }
+
           fPosition = (modelViewMatrix * vPosition).xyz;
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;
       }
@@ -123,6 +130,7 @@
       uniform mat4 modelViewMatrix;
       uniform mat4 projectionMatrix;
       uniform mat3 normalMatrix;
+      uniform vec4 materialAmbient;
       uniform vec4 ambientProduct;
       uniform vec4 diffuseProduct;
       uniform vec4 specularProduct;
@@ -138,56 +146,28 @@
       varying vec4 fColor;
 
       void main() {
-          vec3 pos = (modelViewMatrix * vPosition).xyz;
-          vec3 N = normalize(normalMatrix * vNormal);
-          vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+          // Check if this is the light source
+          if (materialAmbient.r >= 1.0 && materialAmbient.g >= 1.0 && materialAmbient.b >= 1.0) {
+              fColor = vec4(1.0, 1.0, 1.0, 1.0);
+          } else {
+              vec3 pos = (modelViewMatrix * vPosition).xyz;
+              vec3 N = normalize(normalMatrix * vNormal);
+              vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
 
-          // Add ambient
-          finalColor += ambientProduct;
+              // Add ambient
+              finalColor += ambientProduct;
 
-          // Point light
-          if (pointLightEnabled) {
-              vec3 L;
-              if (pointLightPos.w == 0.0)
-                  L = normalize(pointLightPos.xyz);
-              else
-                  L = normalize(pointLightPos.xyz - pos);
-
-              vec3 E = -normalize(pos);
-              vec3 H = normalize(L + E);
-
-              float Kd = max(dot(L, N), 0.0);
-              vec4 diffuse = Kd * diffuseProduct;
-
-              float Ks = pow(max(dot(N, H), 0.0), shininess);
-              vec4 specular = Ks * specularProduct;
-
-              if (dot(L, N) < 0.0) {
-                  specular = vec4(0.0, 0.0, 0.0, 1.0);
-              }
-
-              finalColor += diffuse + specular;
-          }
-
-          // Spot light
-          if (spotLightEnabled) {
-              vec3 L = normalize(spotLightPos.xyz - pos);
-              vec3 E = -normalize(pos);
-              vec3 H = normalize(L + E);
-
-              vec3 spotDir = normalize(spotDirection);
-              float spotEffect = dot(-L, spotDir);
-              float cutoff = cos(radians(spotCutoff));
-
-              if (spotEffect > cutoff) {
-                  float spotFactor = (spotEffect - cutoff) / (1.0 - cutoff);
-                  float spotIntensity = pow(spotFactor, 2.0);
+              // Point light
+              if (pointLightEnabled) {
+                  vec3 L = normalize(pointLightPos.xyz - pos);
+                  vec3 E = -normalize(pos);
+                  vec3 H = normalize(L + E);
 
                   float Kd = max(dot(L, N), 0.0);
-                  vec4 diffuse = Kd * diffuseProduct * spotIntensity * 2.0;
+                  vec4 diffuse = Kd * diffuseProduct;
 
                   float Ks = pow(max(dot(N, H), 0.0), shininess);
-                  vec4 specular = Ks * specularProduct * spotIntensity * 2.0;
+                  vec4 specular = Ks * specularProduct;
 
                   if (dot(L, N) < 0.0) {
                       specular = vec4(0.0, 0.0, 0.0, 1.0);
@@ -195,10 +175,11 @@
 
                   finalColor += diffuse + specular;
               }
+
+              fColor = finalColor;
           }
 
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-          fColor = finalColor;
           fColor.a = 1.0;
       }
     </script>

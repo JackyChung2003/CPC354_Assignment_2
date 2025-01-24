@@ -125,6 +125,12 @@ var currentObject = "cylinder";
 var currentShading = "phong";
 var phongProgram, gouraudProgram;
 
+// Add these variables at the top with other declarations
+var lightSourceObj;
+var lightSourcePoints = [];
+var lightSourceNormals = [];
+var lightSourceV;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -154,6 +160,16 @@ window.onload = function init() {
   sphereV = sphereObj.Point.length;
   wallV = wallObj.Point.length;
   totalV = pointsArray.length;
+
+  // Initialize light source sphere
+  lightSourceObj = lightSphere(0.1); // Small glowing sphere
+  lightSourcePoints = lightSourceObj.Point;
+  lightSourceNormals = lightSourceObj.Normal;
+  lightSourceV = lightSourcePoints.length;
+
+  // Add light source points and normals to the buffers
+  pointsArray = pointsArray.concat(lightSourcePoints);
+  normalsArray = normalsArray.concat(lightSourceNormals);
 
   // WebGL setup
   getUIElement();
@@ -420,56 +436,54 @@ function getUIElement() {
 
 // Configure WebGL Settings
 function configWebGL() {
+  canvas = document.getElementById("gl-canvas");
   gl = WebGLUtils.setupWebGL(canvas);
-  if (!gl) alert("WebGL isn't available");
+  if (!gl) {
+    alert("WebGL isn't available");
+    return;
+  }
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.enable(gl.DEPTH_TEST);
 
-  // Initialize both shader programs
-  phongProgram = initShaders(
-    gl,
-    "phong-vertex-shader",
-    "phong-fragment-shader"
-  );
-  gouraudProgram = initShaders(
-    gl,
-    "gouraud-vertex-shader",
-    "gouraud-fragment-shader"
-  );
+  try {
+    // Initialize both shader programs
+    phongProgram = initShaders(
+      gl,
+      "phong-vertex-shader",
+      "phong-fragment-shader"
+    );
+    gouraudProgram = initShaders(
+      gl,
+      "gouraud-vertex-shader",
+      "gouraud-fragment-shader"
+    );
 
-  // Set initial program
-  program = phongProgram;
-  gl.useProgram(program);
+    if (!phongProgram || !gouraudProgram) {
+      throw new Error("Failed to initialize shaders");
+    }
 
-  pBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW);
+    // Set initial program
+    program = phongProgram;
+    gl.useProgram(program);
 
-  vPosition = gl.getAttribLocation(program, "vPosition");
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vPosition);
+    // Create vertex buffer
+    pBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW);
 
-  nBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW);
+    // Create normal buffer
+    nBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW);
 
-  vNormal = gl.getAttribLocation(program, "vNormal");
-  gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vNormal);
-
-  modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
-  projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
-  normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
-
-  // Add uniform locations for spot light
-  gl.uniform3fv(
-    gl.getUniformLocation(program, "spotDirection"),
-    flatten(spotDirection)
-  );
-  gl.uniform1f(gl.getUniformLocation(program, "spotCutoff"), spotCutoff);
-  gl.uniform1i(gl.getUniformLocation(program, "lightType"), 0); // Default to point/directional
+    // Setup shader locations
+    setupShaderLocations();
+  } catch (error) {
+    console.error("WebGL initialization error:", error);
+    alert("Failed to initialize WebGL: " + error.message);
+  }
 }
 
 // Render the graphics for viewing
@@ -538,6 +552,11 @@ function render() {
   drawCube();
   drawSphere();
   drawWall();
+
+  // Add light source rendering
+  renderLightSource();
+
+  requestAnimationFrame(render);
 }
 
 // Draw functions for Cylinder, Cube, and Sphere
@@ -804,6 +823,91 @@ function setupShaderLocations() {
   gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
   gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vNormal);
+}
+
+// Add this function to render the light source
+function renderLightSource() {
+  if (!pointLightEnabled) return;
+
+  // Save current material
+  var currentMat = materials[currentObject];
+
+  // Create an emissive material for the light source
+  var lightMaterial = {
+    ambient: vec4(1.0, 1.0, 1.0, 1.0),
+    diffuse: vec4(1.0, 1.0, 1.0, 1.0),
+    specular: vec4(1.0, 1.0, 1.0, 1.0),
+    shininess: 100.0,
+    ambientCoef: 1.0,
+    diffuseCoef: 1.0,
+    specularCoef: 1.0,
+  };
+
+  // Update uniforms with light material
+  updateMaterialUniforms(lightMaterial);
+
+  // Create model view matrix for light source
+  var lightModelView = mult(
+    modelViewMatrix,
+    translate(lightPos[0], lightPos[1], lightPos[2])
+  );
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(lightModelView));
+
+  // Update normal matrix
+  var nMatrix = normalMatrix(lightModelView, true);
+  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
+
+  // Draw light source
+  gl.drawArrays(gl.TRIANGLES, totalV, lightSourceV);
+
+  // Restore original material
+  updateMaterialUniforms(currentMat);
+}
+
+function initShaders(gl, vertexShaderId, fragmentShaderId) {
+  try {
+    const vertShdr = compileShader(gl, vertexShaderId, gl.VERTEX_SHADER);
+    const fragShdr = compileShader(gl, fragmentShaderId, gl.FRAGMENT_SHADER);
+
+    if (!vertShdr || !fragShdr) {
+      throw new Error("Shader compilation failed");
+    }
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vertShdr);
+    gl.attachShader(program, fragShdr);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(
+        "Shader program failed to link: " + gl.getProgramInfoLog(program)
+      );
+    }
+
+    return program;
+  } catch (error) {
+    console.error("Shader initialization error:", error);
+    return null;
+  }
+}
+
+function compileShader(gl, shaderId, shaderType) {
+  const shaderScript = document.getElementById(shaderId);
+  if (!shaderScript) {
+    throw new Error(`Shader script not found: ${shaderId}`);
+  }
+
+  const shader = gl.createShader(shaderType);
+  gl.shaderSource(shader, shaderScript.text);
+  gl.compileShader(shader);
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const error = gl.getShaderInfoLog(shader);
+    gl.deleteShader(shader);
+    throw new Error(`Shader compilation error: ${error}`);
+  }
+
+  return shader;
 }
 
 /*-----------------------------------------------------------------------------------*/
