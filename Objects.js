@@ -121,6 +121,10 @@ var materials = {
 
 var currentObject = "cylinder";
 
+// Add these variables at the top with other declarations
+var currentShading = "phong";
+var phongProgram, gouraudProgram;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -401,6 +405,17 @@ function getUIElement() {
     document.getElementById("text-spot-angle").innerHTML = this.value;
     render();
   };
+
+  // Add shading type selector handler
+  document.getElementById("shading-type").onchange = function () {
+    currentShading = this.value;
+    program = currentShading === "phong" ? phongProgram : gouraudProgram;
+    gl.useProgram(program);
+
+    // Re-get all attribute and uniform locations
+    setupShaderLocations();
+    render();
+  };
 }
 
 // Configure WebGL Settings
@@ -412,7 +427,20 @@ function configWebGL() {
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.enable(gl.DEPTH_TEST);
 
-  program = initShaders(gl, "vertex-shader", "fragment-shader");
+  // Initialize both shader programs
+  phongProgram = initShaders(
+    gl,
+    "phong-vertex-shader",
+    "phong-fragment-shader"
+  );
+  gouraudProgram = initShaders(
+    gl,
+    "gouraud-vertex-shader",
+    "gouraud-fragment-shader"
+  );
+
+  // Set initial program
+  program = phongProgram;
   gl.useProgram(program);
 
   pBuffer = gl.createBuffer();
@@ -755,6 +783,27 @@ function rgbToHex(color) {
   const g = Math.round(color[1] * 255);
   const b = Math.round(color[2] * 255);
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+}
+
+// Add new function to setup shader locations
+function setupShaderLocations() {
+  // Get attribute locations
+  vPosition = gl.getAttribLocation(program, "vPosition");
+  vNormal = gl.getAttribLocation(program, "vNormal");
+
+  // Get uniform locations
+  modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
+  projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
+  normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
+
+  // Re-bind buffers
+  gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
+  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vPosition);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
+  gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vNormal);
 }
 
 /*-----------------------------------------------------------------------------------*/

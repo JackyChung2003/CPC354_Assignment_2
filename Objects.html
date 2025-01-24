@@ -13,34 +13,48 @@
     <link rel="stylesheet" type="text/css" href="ObjectsCSS.css" />
 
     <!-- Define the vertex shader -->
-    <script id="vertex-shader" type="x-shader/x-vertex">
-      // Vertex Shader Code
-      uniform mat4 projectionMatrix;
+    <script id="phong-vertex-shader" type="x-shader/x-vertex">
+      attribute vec4 vPosition;
+      attribute vec3 vNormal;
+
       uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
       uniform mat3 normalMatrix;
+
+      varying vec3 fNormal;
+      varying vec3 fPosition;
+
+      void main() {
+          fNormal = normalize(normalMatrix * vNormal);
+          fPosition = (modelViewMatrix * vPosition).xyz;
+          gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+      }
+    </script>
+
+    <!-- Define the fragment shader -->
+    <script id="phong-fragment-shader" type="x-shader/x-fragment">
+      precision mediump float;
+
+      varying vec3 fNormal;
+      varying vec3 fPosition;
+
       uniform vec4 ambientProduct;
       uniform vec4 diffuseProduct;
       uniform vec4 specularProduct;
       uniform vec4 lightPos;
       uniform float shininess;
-      uniform vec3 spotDirection;
-      uniform float spotCutoff;
-      uniform int lightType; // 0: directional/point, 1: spot
       uniform bool pointLightEnabled;
       uniform bool spotLightEnabled;
       uniform vec4 pointLightPos;
       uniform vec4 spotLightPos;
-
-      attribute vec4 vPosition;
-      attribute vec3 vNormal;
-
-      varying vec4 fColor;
+      uniform vec3 spotDirection;
+      uniform float spotCutoff;
 
       void main() {
-          vec3 pos = (modelViewMatrix * vPosition).xyz;
           vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+          vec3 N = normalize(fNormal);
 
-          // Add ambient light only once
+          // Add ambient light
           finalColor += ambientProduct;
 
           // Point light calculation
@@ -49,11 +63,10 @@
               if (pointLightPos.w == 0.0)
                   L = normalize(pointLightPos.xyz);
               else
-                  L = normalize(pointLightPos.xyz - pos);
+                  L = normalize(pointLightPos.xyz - fPosition);
 
-              vec3 E = -normalize(pos);
+              vec3 E = -normalize(fPosition);
               vec3 H = normalize(L + E);
-              vec3 N = normalize(normalMatrix * vNormal);
 
               float Kd = max(dot(L, N), 0.0);
               vec4 diffuse = Kd * diffuseProduct;
@@ -70,10 +83,97 @@
 
           // Spot light calculation
           if (spotLightEnabled) {
+              vec3 L = normalize(spotLightPos.xyz - fPosition);
+              vec3 E = -normalize(fPosition);
+              vec3 H = normalize(L + E);
+              vec3 N = normalize(fNormal);
+
+              vec3 spotDir = normalize(spotDirection);
+              float spotEffect = dot(-L, spotDir);
+              float cutoff = cos(radians(spotCutoff));
+
+              if (spotEffect > cutoff) {
+                  float spotFactor = (spotEffect - cutoff) / (1.0 - cutoff);
+                  float spotIntensity = pow(spotFactor, 2.0);
+
+                  float Kd = max(dot(L, N), 0.0);
+                  vec4 diffuse = Kd * diffuseProduct * spotIntensity * 2.0;
+
+                  float Ks = pow(max(dot(N, H), 0.0), shininess);
+                  vec4 specular = Ks * specularProduct * spotIntensity * 2.0;
+
+                  if (dot(L, N) < 0.0) {
+                      specular = vec4(0.0, 0.0, 0.0, 1.0);
+                  }
+
+                  finalColor += diffuse + specular;
+              }
+          }
+
+          gl_FragColor = finalColor;
+          gl_FragColor.a = 1.0;
+      }
+    </script>
+
+    <!-- Gouraud Vertex Shader -->
+    <script id="gouraud-vertex-shader" type="x-shader/x-vertex">
+      attribute vec4 vPosition;
+      attribute vec3 vNormal;
+
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+      uniform mat3 normalMatrix;
+      uniform vec4 ambientProduct;
+      uniform vec4 diffuseProduct;
+      uniform vec4 specularProduct;
+      uniform vec4 lightPos;
+      uniform float shininess;
+      uniform bool pointLightEnabled;
+      uniform bool spotLightEnabled;
+      uniform vec4 pointLightPos;
+      uniform vec4 spotLightPos;
+      uniform vec3 spotDirection;
+      uniform float spotCutoff;
+
+      varying vec4 fColor;
+
+      void main() {
+          vec3 pos = (modelViewMatrix * vPosition).xyz;
+          vec3 N = normalize(normalMatrix * vNormal);
+          vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+
+          // Add ambient
+          finalColor += ambientProduct;
+
+          // Point light
+          if (pointLightEnabled) {
+              vec3 L;
+              if (pointLightPos.w == 0.0)
+                  L = normalize(pointLightPos.xyz);
+              else
+                  L = normalize(pointLightPos.xyz - pos);
+
+              vec3 E = -normalize(pos);
+              vec3 H = normalize(L + E);
+
+              float Kd = max(dot(L, N), 0.0);
+              vec4 diffuse = Kd * diffuseProduct;
+
+              float Ks = pow(max(dot(N, H), 0.0), shininess);
+              vec4 specular = Ks * specularProduct;
+
+              if (dot(L, N) < 0.0) {
+                  specular = vec4(0.0, 0.0, 0.0, 1.0);
+              }
+
+              finalColor += diffuse + specular;
+          }
+
+          // Spot light
+          if (spotLightEnabled) {
               vec3 L = normalize(spotLightPos.xyz - pos);
               vec3 E = -normalize(pos);
               vec3 H = normalize(L + E);
-              vec3 N = normalize(normalMatrix * vNormal);
 
               vec3 spotDir = normalize(spotDirection);
               float spotEffect = dot(-L, spotDir);
@@ -103,8 +203,8 @@
       }
     </script>
 
-    <!-- Define the fragment shader -->
-    <script id="fragment-shader" type="x-shader/x-fragment">
+    <!-- Gouraud Fragment Shader -->
+    <script id="gouraud-fragment-shader" type="x-shader/x-fragment">
       precision mediump float;
       varying vec4 fColor;
 
@@ -386,6 +486,17 @@
             <div class="slider">
               Specular Color
               <input type="color" id="specular-color" value="#808080" />
+            </div>
+          </div>
+
+          <!-- Add this inside the Global Settings section, after the color controls -->
+          <div class="param-panel horizontal-align">
+            <div class="slider">
+              Shading Type
+              <select id="shading-type" class="select-box">
+                <option value="phong">Phong Shading</option>
+                <option value="gouraud">Gouraud Shading</option>
+              </select>
             </div>
           </div>
         </div>

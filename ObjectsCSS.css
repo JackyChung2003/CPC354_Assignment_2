@@ -126,6 +126,8 @@ body {
   border-radius: 5px;
   background-color: #ffffff;
   border: 2px solid #00b4d8;
+  margin-left: 10px;
+  font-size: 14px;
 }
 
 input[type="color"] {
