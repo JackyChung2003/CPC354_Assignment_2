@@ -74,10 +74,16 @@ var spotCutoff = 45.0;
 var pointLightEnabled = true;
 var spotLightEnabled = true;
 
-// Add camera variables
-var eye = vec3(0.0, 0.0, 5.0); // Camera position
-var at = vec3(0.0, 0.0, 0.0); // Look at point
-var up = vec3(0.0, 1.0, 0.0); // Up vector
+// Modify these camera parameters
+var near = 0.1;
+var far = 100.0;
+var fovy = 40.0; // Decreased field of view for slight zoom effect
+var aspect = 800 / 600;
+
+// Move camera closer but still maintain good view of all objects
+var eye = vec3(0.0, 0.0, 8.0); // Changed from 10.0 to 8.0 to zoom in
+var at = vec3(0.0, 0.0, 0.0);
+var up = vec3(0.0, 1.0, 0.0);
 
 // Add material properties for each object
 var materials = {
@@ -500,11 +506,9 @@ function configWebGL() {
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Update view matrix using lookAt
+  // Update view and projection matrices
   modelViewMatrix = lookAt(eye, at, up);
-
-  // Update projection matrix
-  projectionMatrix = perspective(45, canvas.width / canvas.height, 0.1, 100.0);
+  projectionMatrix = perspective(fovy, aspect, near, far);
 
   // Send matrices to shaders
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
@@ -997,6 +1001,22 @@ function updateCompass() {
   compassCtx.font = "12px Arial";
   compassCtx.fillStyle = "#4a4e69";
   compassCtx.fillText("Light Direction", centerX, centerY - radius - 30);
+}
+
+// If you have camera controls, you might want to update their default values too:
+function setupCameraControls() {
+  document.getElementById("camera-distance").value = "8.0"; // Update default value
+  document.getElementById("camera-distance").oninput = function () {
+    let distance = parseFloat(this.value);
+    eye = vec3(0.0, 0.0, distance);
+    render();
+  };
+
+  document.getElementById("camera-fov").value = "40.0"; // Update default value
+  document.getElementById("camera-fov").oninput = function () {
+    fovy = parseFloat(this.value);
+    render();
+  };
 }
 
 /*-----------------------------------------------------------------------------------*/
