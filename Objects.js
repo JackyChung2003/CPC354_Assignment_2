@@ -128,10 +128,6 @@ var materials = {
 var currentObject = "cylinder";
 
 // Add these variables at the top with other declarations
-var currentShading = "phong";
-var phongProgram, gouraudProgram;
-
-// Add these variables at the top with other declarations
 var lightSourceObj;
 var lightSourcePoints = [];
 var lightSourceNormals = [];
@@ -437,17 +433,6 @@ function getUIElement() {
     document.getElementById("text-spot-angle").innerHTML = this.value;
     render();
   };
-
-  // Add shading type selector handler
-  document.getElementById("shading-type").onchange = function () {
-    currentShading = this.value;
-    program = currentShading === "phong" ? phongProgram : gouraudProgram;
-    gl.useProgram(program);
-
-    // Re-get all attribute and uniform locations
-    setupShaderLocations();
-    render();
-  };
 }
 
 // Configure WebGL Settings
@@ -464,24 +449,14 @@ function configWebGL() {
   gl.enable(gl.DEPTH_TEST);
 
   try {
-    // Initialize both shader programs
-    phongProgram = initShaders(
-      gl,
-      "phong-vertex-shader",
-      "phong-fragment-shader"
-    );
-    gouraudProgram = initShaders(
-      gl,
-      "gouraud-vertex-shader",
-      "gouraud-fragment-shader"
-    );
+    // Initialize only the phong shader program
+    program = initShaders(gl, "phong-vertex-shader", "phong-fragment-shader");
 
-    if (!phongProgram || !gouraudProgram) {
+    if (!program) {
       throw new Error("Failed to initialize shaders");
     }
 
-    // Set initial program
-    program = phongProgram;
+    // Use the program immediately after creation
     gl.useProgram(program);
 
     // Create vertex buffer
@@ -518,9 +493,11 @@ function render() {
   nMatrix = normalMatrix(modelViewMatrix, true);
   gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
+  // Update lighting products
   ambientProduct = mult(lightAmbient, materialAmbient);
   diffuseProduct = mult(lightDiffuse, materialDiffuse);
   specularProduct = mult(lightSpecular, materialSpecular);
+
   gl.uniform4fv(
     gl.getUniformLocation(program, "ambientProduct"),
     flatten(ambientProduct)
