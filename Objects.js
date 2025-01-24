@@ -137,6 +137,9 @@ var lightSourceV;
 var compassCanvas;
 var compassCtx;
 
+// Add smooth shading toggle handler
+var smoothShading = true;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -309,6 +312,23 @@ window.onload = function init() {
     });
 
   updateMaterialControls();
+
+  // Add smooth shading toggle handler with immediate effect
+  document.getElementById("smooth-shading-toggle").onchange = function () {
+    smoothShading = this.checked;
+    // Update the text based on the toggle state
+    document.getElementById("shading-mode-text").textContent = smoothShading
+      ? "Smooth Shading"
+      : "Flat Shading";
+    gl.uniform1i(
+      gl.getUniformLocation(program, "smoothShading"),
+      smoothShading
+    );
+    render();
+  };
+
+  // Initial setup of smoothShading uniform
+  gl.uniform1i(gl.getUniformLocation(program, "smoothShading"), smoothShading);
 };
 
 // Retrieve all elements from HTML and store in the corresponding variables
@@ -471,6 +491,12 @@ function configWebGL() {
 
     // Setup shader locations
     setupShaderLocations();
+
+    // Set initial smooth shading state
+    gl.uniform1i(
+      gl.getUniformLocation(program, "smoothShading"),
+      smoothShading
+    );
   } catch (error) {
     console.error("WebGL initialization error:", error);
     alert("Failed to initialize WebGL: " + error.message);
@@ -538,6 +564,9 @@ function render() {
     flatten(spotDirection)
   );
   gl.uniform1f(gl.getUniformLocation(program, "spotCutoff"), spotCutoff);
+
+  // Set smooth shading uniform before any drawing
+  gl.uniform1i(gl.getUniformLocation(program, "smoothShading"), smoothShading);
 
   drawCylinder();
   drawCube();
