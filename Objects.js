@@ -137,6 +137,9 @@ var lightSourceV;
 var compassCanvas;
 var compassCtx;
 
+// Add at the top with other variable declarations
+var smoothShading = true;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -309,6 +312,16 @@ window.onload = function init() {
     });
 
   updateMaterialControls();
+
+  // Add shading toggle handler
+  document.getElementById("shading-toggle").onchange = function () {
+    smoothShading = this.checked;
+    document.getElementById("shading-mode-text").innerHTML = smoothShading
+      ? "Smooth"
+      : "Flat";
+    console.log("Shading mode changed to:", smoothShading ? "Smooth" : "Flat");
+    render();
+  };
 };
 
 // Retrieve all elements from HTML and store in the corresponding variables
@@ -443,6 +456,9 @@ function configWebGL() {
     alert("WebGL isn't available");
     return;
   }
+
+  // Enable derivatives extension
+  gl.getExtension("OES_standard_derivatives");
 
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -590,6 +606,10 @@ function drawSphere() {
 function drawWall() {
   var mat = materials.wall;
   updateMaterialUniforms(mat);
+
+  // Force smooth shading for wall
+  gl.uniform1i(gl.getUniformLocation(program, "flatShading"), false);
+
   var mvMatrix = mult(
     modelViewMatrix,
     mult(translate(0, 0, -2), scale(8, 4.5, 0.01))
@@ -761,6 +781,13 @@ function updateMaterialUniforms(material) {
     material.specularCoef
   );
   gl.uniform1f(gl.getUniformLocation(program, "shininess"), material.shininess);
+
+  // Add flat shading uniform - note we invert smoothShading since the uniform is named flatShading
+  if (currentObject === "wall") {
+    gl.uniform1i(gl.getUniformLocation(program, "flatShading"), false);
+  } else {
+    gl.uniform1i(gl.getUniformLocation(program, "flatShading"), !smoothShading);
+  }
 }
 
 function updateMaterialControls() {

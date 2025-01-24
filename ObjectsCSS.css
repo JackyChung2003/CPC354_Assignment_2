@@ -317,3 +317,9 @@ input:checked + .switch-slider:before {
     margin-top: 15px;
   }
 }
+
+#shading-mode-text {
+  color: #ffffff;
+  font-size: 14px;
+  margin-left: 10px;
+}

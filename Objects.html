@@ -21,6 +21,7 @@
       uniform mat4 projectionMatrix;
       uniform mat3 normalMatrix;
       uniform vec4 materialAmbient;
+      uniform bool flatShading;
 
       varying vec3 fNormal;
       varying vec3 fPosition;
@@ -29,7 +30,12 @@
           // Check if this is the light source
           if (materialAmbient.r >= 1.0 && materialAmbient.g >= 1.0 && materialAmbient.b >= 1.0) {
               fNormal = vec3(1.0, 1.0, 1.0);
+          } else if (flatShading) {
+              // For flat shading, use the vertex normal directly
+              // The face normal effect will be achieved by not interpolating in the fragment shader
+              fNormal = normalize(normalMatrix * vNormal);
           } else {
+              // For smooth shading, use the vertex normal
               fNormal = normalize(normalMatrix * vNormal);
           }
 
@@ -40,6 +46,7 @@
 
     <!-- Define the fragment shader -->
     <script id="phong-fragment-shader" type="x-shader/x-fragment">
+      #extension GL_OES_standard_derivatives : enable
       precision mediump float;
 
       varying vec3 fNormal;
@@ -56,10 +63,21 @@
       uniform vec4 spotLightPos;
       uniform vec3 spotDirection;
       uniform float spotCutoff;
+      uniform bool flatShading;
 
       void main() {
+          vec3 N;
+          if (flatShading) {
+              // Calculate flat shading normal using derivatives
+              vec3 dx = dFdx(fPosition);
+              vec3 dy = dFdy(fPosition);
+              N = normalize(cross(dx, dy));
+          } else {
+              // Use interpolated normal for smooth shading
+              N = normalize(fNormal);
+          }
+
           vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
-          vec3 N = normalize(fNormal);
 
           // Add ambient light
           finalColor += ambientProduct;
@@ -398,6 +416,20 @@
               <div class="slider">
                 Specular Color
                 <input type="color" id="specular-color" value="#808080" />
+              </div>
+            </div>
+
+            <!-- Add this inside the Global Settings section -->
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Shading Mode
+                <label class="switch">
+                  <input type="checkbox" id="shading-toggle" checked />
+                  <span class="switch-slider"></span>
+                </label>
+                <span id="shading-mode-text" style="margin-left: 10px"
+                  >Smooth</span
+                >
               </div>
             </div>
           </div>
