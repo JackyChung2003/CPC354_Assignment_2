@@ -196,10 +196,13 @@
   </head>
 
   <body>
-    <!-- Canvas for the graphic rendering -->
-    <div class="canvas">
-      <canvas id="gl-canvas" width="1280" height="720">
-        Error: your browser doesn't support the HTML5 canvas element
+    <!-- Add this right after your WebGL canvas -->
+    <div class="canvas-container">
+      <canvas id="gl-canvas" class="canvas" width="800" height="600">
+        Oops ... your browser doesn't support the HTML5 canvas element
+      </canvas>
+      <canvas id="direction-compass" class="compass" width="150" height="150">
+        Your browser doesn't support the HTML5 canvas element
       </canvas>
     </div>
 

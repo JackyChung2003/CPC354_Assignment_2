@@ -131,6 +131,10 @@ var lightSourcePoints = [];
 var lightSourceNormals = [];
 var lightSourceV;
 
+// Add these variables at the top with other declarations
+var compassCanvas;
+var compassCtx;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -170,6 +174,9 @@ window.onload = function init() {
   // Add light source points and normals to the buffers
   pointsArray = pointsArray.concat(lightSourcePoints);
   normalsArray = normalsArray.concat(lightSourceNormals);
+
+  // Initialize compass
+  setupCompass();
 
   // WebGL setup
   getUIElement();
@@ -325,18 +332,21 @@ function getUIElement() {
   sliderLightX.oninput = function () {
     lightPos[0] = parseFloat(this.value);
     document.getElementById("text-light-x").innerHTML = this.value;
+    updateCompass();
     render();
   };
 
   sliderLightY.oninput = function () {
     lightPos[1] = parseFloat(this.value);
     document.getElementById("text-light-y").innerHTML = this.value;
+    updateCompass();
     render();
   };
 
   sliderLightZ.oninput = function () {
     lightPos[2] = parseFloat(this.value);
     document.getElementById("text-light-z").innerHTML = this.value;
+    updateCompass();
     render();
   };
 
@@ -908,6 +918,85 @@ function compileShader(gl, shaderId, shaderType) {
   }
 
   return shader;
+}
+
+// Add these new functions for compass handling
+function setupCompass() {
+  compassCanvas = document.getElementById("direction-compass");
+  compassCtx = compassCanvas.getContext("2d");
+  updateCompass();
+}
+
+function updateCompass() {
+  const centerX = compassCanvas.width / 2;
+  const centerY = compassCanvas.height / 2;
+  const radius = compassCanvas.width / 2 - 20; // Leave some padding
+
+  // Clear the canvas
+  compassCtx.clearRect(0, 0, compassCanvas.width, compassCanvas.height);
+
+  // Draw the compass circle
+  compassCtx.beginPath();
+  compassCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  compassCtx.strokeStyle = "#4a4e69";
+  compassCtx.lineWidth = 2;
+  compassCtx.stroke();
+
+  // Draw cardinal directions
+  compassCtx.font = "14px Arial";
+  compassCtx.fillStyle = "#4a4e69";
+  compassCtx.textAlign = "center";
+  compassCtx.textBaseline = "middle";
+
+  compassCtx.fillText("Front", centerX, centerY + radius + 15);
+  compassCtx.fillText("Back", centerX, centerY - radius - 15);
+  compassCtx.fillText("Right", centerX + radius + 15, centerY);
+  compassCtx.fillText("Left", centerX - radius - 15, centerY);
+
+  // Draw the direction arrow
+  const arrowLength = radius - 10;
+
+  // For directional light, we want to show where the light is coming FROM
+  // So we'll invert the direction to show where it's coming from
+  let lightDir = normalize(vec3(-lightPos[0], -lightPos[1], -lightPos[2]));
+
+  // Project the 3D direction onto the 2D compass
+  // Using x and z coordinates for the compass plane
+  let compassX = lightDir[0] * arrowLength; // Removed negative sign
+  let compassY = lightDir[2] * arrowLength; // Removed negative sign
+
+  // Draw the arrow
+  compassCtx.beginPath();
+  compassCtx.moveTo(centerX, centerY);
+  compassCtx.lineTo(centerX + compassX, centerY + compassY);
+
+  // Draw arrow head
+  const headLength = 10;
+  const angle = Math.atan2(compassY, compassX);
+  compassCtx.lineTo(
+    centerX + compassX - headLength * Math.cos(angle - Math.PI / 6),
+    centerY + compassY - headLength * Math.sin(angle - Math.PI / 6)
+  );
+  compassCtx.moveTo(centerX + compassX, centerY + compassY);
+  compassCtx.lineTo(
+    centerX + compassX - headLength * Math.cos(angle + Math.PI / 6),
+    centerY + compassY - headLength * Math.sin(angle + Math.PI / 6)
+  );
+
+  compassCtx.strokeStyle = "#00b4d8";
+  compassCtx.lineWidth = 3;
+  compassCtx.stroke();
+
+  // Draw center dot
+  compassCtx.beginPath();
+  compassCtx.arc(centerX, centerY, 3, 0, Math.PI * 2);
+  compassCtx.fillStyle = "#4a4e69";
+  compassCtx.fill();
+
+  // Add text to indicate this shows light direction
+  compassCtx.font = "12px Arial";
+  compassCtx.fillStyle = "#4a4e69";
+  compassCtx.fillText("Light Direction", centerX, centerY - radius - 30);
 }
 
 /*-----------------------------------------------------------------------------------*/

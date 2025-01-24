@@ -248,3 +248,16 @@ input:checked + .switch-slider {
 input:checked + .switch-slider:before {
   transform: translateX(26px);
 }
+
+.canvas-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.compass {
+  border: 5px solid #4a4e69;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
