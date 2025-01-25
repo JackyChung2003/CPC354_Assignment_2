@@ -43,6 +43,7 @@ var pointsArray = [],
   sphereV,
   wallV,
   totalV;
+var texCoordsArray = [];
 
 // Variables for lighting control
 var ambientProduct, diffuseProduct, specularProduct;
@@ -140,6 +141,28 @@ var compassCtx;
 // Add at the top with other variable declarations
 var smoothShading = true;
 
+// Add to variable declarations
+var texCoordBuffer;
+var vTexCoord;
+var texture;
+var useTexture = false;
+var textures = {
+  cylinder: null,
+  cube: null,
+  sphere: null,
+  wall: null,
+};
+
+var useTextures = {
+  cylinder: false,
+  cube: false,
+  sphere: false,
+  wall: false,
+};
+
+var textureToggle;
+var textureUpload;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -149,20 +172,20 @@ window.onload = function init() {
   cylinderObj = cylinder(72, 3, true); // Adjusted height
   cylinderObj.Rotate(45, [1, 1, 0]);
   cylinderObj.Scale(1.2, 1.2, 1.2); // Scaled to proper cylinder dimensions
-  concatData(cylinderObj.Point, cylinderObj.Normal);
+  concatData(cylinderObj);
 
   cubeObj = cube();
   cubeObj.Rotate(45, [1, 1, 0]);
   cubeObj.Scale(1, 1, 1); // Cube remains 1x1x1
-  concatData(cubeObj.Point, cubeObj.Normal);
+  concatData(cubeObj);
 
   sphereObj = sphere(4); // Increased subdivision for smoother sphere
   sphereObj.Rotate(45, [0, 1, 0]);
   sphereObj.Scale(0.8, 0.8, 0.8); // Proper scaling for a smaller sphere
-  concatData(sphereObj.Point, sphereObj.Normal);
+  concatData(sphereObj);
 
   wallObj = wall();
-  concatData(wallObj.Point, wallObj.Normal);
+  concatData(wallObj);
 
   cylinderV = cylinderObj.Point.length;
   cubeV = cubeObj.Point.length;
@@ -321,6 +344,30 @@ window.onload = function init() {
       : "Flat";
     console.log("Shading mode changed to:", smoothShading ? "Smooth" : "Flat");
     render();
+  };
+
+  textureToggle = document.getElementById("texture-toggle");
+  textureUpload = document.getElementById("texture-upload");
+
+  textureToggle.onchange = function () {
+    useTextures[currentObject] = this.checked;
+    render();
+  };
+
+  textureUpload.onchange = function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = document.getElementById(`${currentObject}-texture`);
+      img.onload = function () {
+        configureTexture(img, currentObject);
+        render();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 };
 
@@ -487,6 +534,18 @@ function configWebGL() {
 
     // Setup shader locations
     setupShaderLocations();
+
+    // Add texture coordinate buffer setup
+    texCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(texCoordsArray), gl.STATIC_DRAW);
+
+    vTexCoord = gl.getAttribLocation(program, "vTexCoord");
+    gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vTexCoord);
+
+    // Add texture sampler setup
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
   } catch (error) {
     console.error("WebGL initialization error:", error);
     alert("Failed to initialize WebGL: " + error.message);
@@ -570,6 +629,19 @@ function render() {
 function drawCylinder() {
   var mat = materials.cylinder;
   updateMaterialUniforms(mat);
+
+  // Set texture state for cylinder
+  gl.uniform1i(
+    gl.getUniformLocation(program, "useTexture"),
+    useTextures.cylinder
+  );
+  if (useTextures.cylinder && textures.cylinder) {
+    gl.bindTexture(gl.TEXTURE_2D, textures.cylinder);
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+  } else {
+    gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
+  }
+
   var mvMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
@@ -582,6 +654,16 @@ function drawCylinder() {
 function drawCube() {
   var mat = materials.cube;
   updateMaterialUniforms(mat);
+
+  // Set texture state for cube
+  gl.uniform1i(gl.getUniformLocation(program, "useTexture"), useTextures.cube);
+  if (useTextures.cube && textures.cube) {
+    gl.bindTexture(gl.TEXTURE_2D, textures.cube);
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+  } else {
+    gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
+  }
+
   var mvMatrix = mult(modelViewMatrix, translate(0, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
@@ -594,6 +676,19 @@ function drawCube() {
 function drawSphere() {
   var mat = materials.sphere;
   updateMaterialUniforms(mat);
+
+  // Set texture state for sphere
+  gl.uniform1i(
+    gl.getUniformLocation(program, "useTexture"),
+    useTextures.sphere
+  );
+  if (useTextures.sphere && textures.sphere) {
+    gl.bindTexture(gl.TEXTURE_2D, textures.sphere);
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+  } else {
+    gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
+  }
+
   var mvMatrix = mult(modelViewMatrix, translate(2, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
@@ -606,6 +701,15 @@ function drawSphere() {
 function drawWall() {
   var mat = materials.wall;
   updateMaterialUniforms(mat);
+
+  // Set texture state for wall
+  gl.uniform1i(gl.getUniformLocation(program, "useTexture"), useTextures.wall);
+  if (useTextures.wall && textures.wall) {
+    gl.bindTexture(gl.TEXTURE_2D, textures.wall);
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+  } else {
+    gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
+  }
 
   // Force smooth shading for wall
   gl.uniform1i(gl.getUniformLocation(program, "flatShading"), false);
@@ -623,9 +727,10 @@ function drawWall() {
 }
 
 // Concatenate the corresponding shape's values
-function concatData(point, normal) {
-  pointsArray = pointsArray.concat(point);
-  normalsArray = normalsArray.concat(normal);
+function concatData(shape) {
+  pointsArray = pointsArray.concat(shape.Point);
+  normalsArray = normalsArray.concat(shape.Normal);
+  texCoordsArray = texCoordsArray.concat(shape.TexCoord || []);
 }
 
 // Add utility function for converting hex colors to RGB
@@ -1021,6 +1126,43 @@ function setupCameraControls() {
     fovy = parseFloat(this.value);
     render();
   };
+}
+
+// Add texture configuration function
+function configureTexture(image, objectType) {
+  textures[objectType] = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, textures[objectType]);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+
+  if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+    gl.generateMipmap(gl.TEXTURE_2D);
+  } else {
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  }
+}
+
+function isPowerOf2(value) {
+  return (value & (value - 1)) === 0;
+}
+
+// Update object selection to handle textures
+function selectObject(objName) {
+  currentObject = objName;
+
+  // Hide all texture controls first
+  Object.values(textureControls).forEach((controls) => {
+    controls.container.classList.remove("active");
+  });
+
+  // Show texture controls for selected object
+  textureControls[objName].container.classList.add("active");
+
+  // Update material controls
+  updateMaterialControls();
+
+  render();
 }
 
 /*-----------------------------------------------------------------------------------*/

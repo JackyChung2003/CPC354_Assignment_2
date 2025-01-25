@@ -12,6 +12,8 @@ function sphere(subdivNum) {
   var vc = vec4(-0.816497, -0.471405, 0.333333, 1);
   var vd = vec4(0.816497, -0.471405, 0.333333, 1);
 
+  var texCoords = [];
+
   function triangle(a, b, c) {
     spherePoints.push([a[0], a[1], a[2], 1]);
     spherePoints.push([b[0], b[1], b[2], 1]);
@@ -20,6 +22,21 @@ function sphere(subdivNum) {
     sphereNormals.push([a[0], a[1], a[2]]);
     sphereNormals.push([b[0], b[1], b[2]]);
     sphereNormals.push([c[0], c[1], c[2]]);
+
+    texCoords.push(
+      vec2(
+        (1 + Math.atan2(a[0], a[2]) / Math.PI) / 2,
+        (1 + Math.asin(a[1]) / Math.PI) / 2
+      ),
+      vec2(
+        (1 + Math.atan2(b[0], b[2]) / Math.PI) / 2,
+        (1 + Math.asin(b[1]) / Math.PI) / 2
+      ),
+      vec2(
+        (1 + Math.atan2(c[0], c[2]) / Math.PI) / 2,
+        (1 + Math.asin(c[1]) / Math.PI) / 2
+      )
+    );
   }
 
   function divideTriangle(a, b, c, count) {
@@ -110,6 +127,7 @@ function sphere(subdivNum) {
   sphereData.Translate = translate;
   sphereData.Rotate = rotate;
   sphereData.Scale = scale;
+  sphereData.TexCoord = texCoords;
   return sphereData;
 }
 
@@ -134,6 +152,8 @@ function cylinder(numSlices, numStacks, caps) {
   var top = 0.5;
   var bottom = -0.5;
   var radius = 0.5;
+
+  var texCoords = [];
 
   // Primitive (geometric shape) initialization
   for (var j = 0; j < stacks; j++) {
@@ -196,6 +216,33 @@ function cylinder(numSlices, numStacks, caps) {
 
       cylinderPoints.push([d[0], d[1], d[2], 1.0]);
       cylinderNormals.push([normal[0], normal[1], normal[2]]);
+
+      texCoords.push(
+        vec2(
+          (1 + Math.atan2(a[0], a[2]) / Math.PI) / 2,
+          (1 + Math.asin(a[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(b[0], b[2]) / Math.PI) / 2,
+          (1 + Math.asin(b[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(c[0], c[2]) / Math.PI) / 2,
+          (1 + Math.asin(c[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(a[0], a[2]) / Math.PI) / 2,
+          (1 + Math.asin(a[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(c[0], c[2]) / Math.PI) / 2,
+          (1 + Math.asin(c[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(d[0], d[2]) / Math.PI) / 2,
+          (1 + Math.asin(d[1]) / Math.PI) / 2
+        )
+      );
     }
   }
 
@@ -236,6 +283,21 @@ function cylinder(numSlices, numStacks, caps) {
 
       cylinderPoints.push([c[0], c[1], c[2], 1.0]);
       cylinderNormals.push(normal);
+
+      texCoords.push(
+        vec2(
+          (1 + Math.atan2(a[0], a[2]) / Math.PI) / 2,
+          (1 + Math.asin(a[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(b[0], b[2]) / Math.PI) / 2,
+          (1 + Math.asin(b[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(c[0], c[2]) / Math.PI) / 2,
+          (1 + Math.asin(c[1]) / Math.PI) / 2
+        )
+      );
     }
 
     // Bottom surface
@@ -253,6 +315,21 @@ function cylinder(numSlices, numStacks, caps) {
 
       cylinderPoints.push([c[0], c[1], c[2], 1.0]);
       cylinderNormals.push(normal);
+
+      texCoords.push(
+        vec2(
+          (1 + Math.atan2(a[0], a[2]) / Math.PI) / 2,
+          (1 + Math.asin(a[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(b[0], b[2]) / Math.PI) / 2,
+          (1 + Math.asin(b[1]) / Math.PI) / 2
+        ),
+        vec2(
+          (1 + Math.atan2(c[0], c[2]) / Math.PI) / 2,
+          (1 + Math.asin(c[1]) / Math.PI) / 2
+        )
+      );
     }
   }
 
@@ -315,6 +392,7 @@ function cylinder(numSlices, numStacks, caps) {
   cylinderData.Translate = translate;
   cylinderData.Rotate = rotate;
   cylinderData.Scale = scale;
+  cylinderData.TexCoord = texCoords;
   return cylinderData;
 }
 
@@ -325,6 +403,7 @@ function cylinder(numSlices, numStacks, caps) {
 function cube() {
   var cubePoints = [],
     cubeNormals = [],
+    cubeTexCoords = [],
     cubeData = {};
 
   var cubeVertices = [
@@ -356,6 +435,27 @@ function cube() {
     0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4,
     4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5,
   ];
+
+  // Add texture coordinates for each face
+  var texCoordData = [
+    // Front face
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+    // Right face
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+    // Bottom face
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+    // Top face
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+    // Back face
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+    // Left face
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+  ];
+
+  // Convert texture coordinates to vec2
+  for (var i = 0; i < texCoordData.length; i += 2) {
+    cubeTexCoords.push(vec2(texCoordData[i], texCoordData[i + 1]));
+  }
 
   // Primitive (geometric shape) initialization
   for (var i = 0; i < cubeQuadElements.length; i++) {
@@ -419,6 +519,7 @@ function cube() {
 
   cubeData.Point = cubePoints;
   cubeData.Normal = cubeNormals;
+  cubeData.TexCoord = cubeTexCoords;
   cubeData.Translate = translate;
   cubeData.Rotate = rotate;
   cubeData.Scale = scale;
@@ -469,6 +570,7 @@ function floor() {
 function wall() {
   var wallPoints = [];
   var wallNormals = [];
+  var wallTexCoords = [];
   var wallData = {};
 
   var vertices = [
@@ -502,8 +604,19 @@ function wall() {
     normals[3]
   );
 
+  // Add texture coordinates
+  wallTexCoords.push(
+    vec2(0.0, 0.0),
+    vec2(0.0, 1.0),
+    vec2(1.0, 1.0),
+    vec2(0.0, 0.0),
+    vec2(1.0, 1.0),
+    vec2(1.0, 0.0)
+  );
+
   wallData.Point = wallPoints;
   wallData.Normal = wallNormals;
+  wallData.TexCoord = wallTexCoords;
   return wallData;
 }
 

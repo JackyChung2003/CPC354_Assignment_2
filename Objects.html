@@ -16,6 +16,7 @@
     <script id="phong-vertex-shader" type="x-shader/x-vertex">
       attribute vec4 vPosition;
       attribute vec3 vNormal;
+      attribute vec2 vTexCoord;
 
       uniform mat4 modelViewMatrix;
       uniform mat4 projectionMatrix;
@@ -25,6 +26,7 @@
 
       varying vec3 fNormal;
       varying vec3 fPosition;
+      varying vec2 fTexCoord;
 
       void main() {
           // Check if this is the light source
@@ -40,6 +42,7 @@
           }
 
           fPosition = (modelViewMatrix * vPosition).xyz;
+          fTexCoord = vTexCoord;
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;
       }
     </script>
@@ -51,6 +54,7 @@
 
       varying vec3 fNormal;
       varying vec3 fPosition;
+      varying vec2 fTexCoord;
 
       uniform vec4 ambientProduct;
       uniform vec4 diffuseProduct;
@@ -64,6 +68,8 @@
       uniform vec3 spotDirection;
       uniform float spotCutoff;
       uniform bool flatShading;
+      uniform sampler2D texture;
+      uniform bool useTexture;
 
       void main() {
           vec3 N;
@@ -132,6 +138,11 @@
 
                   finalColor += diffuse + specular;
               }
+          }
+
+          if (useTexture) {
+              vec4 texColor = texture2D(texture, fTexCoord);
+              finalColor = finalColor * texColor;
           }
 
           gl_FragColor = finalColor;
@@ -654,6 +665,33 @@
                 />100
                 <span id="text-material-shininess">30</span>
               </div>
+            </div>
+
+            <!-- Texture controls -->
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Texture Image
+                <input
+                  type="file"
+                  id="texture-upload"
+                  accept="image/*"
+                  class="texture-input"
+                />
+              </div>
+            </div>
+            <div class="param-panel horizontal-align">
+              <div class="checkText">Enable Texture</div>
+              <label class="switch">
+                <input type="checkbox" id="texture-toggle" />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Add hidden image elements for storing uploaded textures -->
+            <div style="display: none">
+              <img id="sphere-texture" alt="sphere texture" />
+              <img id="cube-texture" alt="cube texture" />
+              <img id="cylinder-texture" alt="cylinder texture" />
             </div>
           </div>
         </div>
