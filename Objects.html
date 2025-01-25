@@ -165,27 +165,32 @@
       <!-- Control Panel -->
       <div class="panel">
         <div class="panel-content">
-          <!-- Light Type Controls Container -->
+          <!-- Light Control Panel -->
           <div class="control-section">
-            <!-- Tab Buttons -->
-            <div class="tab-container">
+            <h3 class="section-title">Light Properties</h3>
+
+            <!-- Light Type Tabs -->
+            <div class="light-tabs">
               <button
-                class="tab-button active"
-                onclick="openTab(event, 'pointLight')"
+                class="light-tab active"
+                onclick="openLightTab(event, 'point-light-content')"
               >
                 Point Light
               </button>
-              <button class="tab-button" onclick="openTab(event, 'spotLight')">
+              <button
+                class="light-tab"
+                onclick="openLightTab(event, 'spot-light-content')"
+              >
                 Spot Light
               </button>
             </div>
 
-            <!-- Point Light Tab -->
-            <div id="pointLight" class="tab-content" style="display: block">
-              <!-- Add toggle switch -->
+            <!-- Point Light Content -->
+            <div id="point-light-content" class="light-content active">
+              <!-- Toggle switch -->
               <div class="param-panel horizontal-align">
                 <div class="slider">
-                  Point Light
+                  Enable
                   <label class="switch">
                     <input type="checkbox" id="point-light-toggle" checked />
                     <span class="switch-slider"></span>
@@ -204,10 +209,10 @@
                 </div>
               </div>
 
-              <!-- Light Position Controls -->
+              <!-- Position Controls -->
               <div class="param-panel horizontal-align">
                 <div class="slider">
-                  Light Position X
+                  Position X
                   <input
                     class="slide"
                     id="slider-light-x"
@@ -225,7 +230,7 @@
 
               <div class="param-panel horizontal-align">
                 <div class="slider">
-                  Light Position Y
+                  Position Y
                   <input
                     class="slide"
                     id="slider-light-y"
@@ -243,7 +248,7 @@
 
               <div class="param-panel horizontal-align">
                 <div class="slider">
-                  Light Position Z
+                  Position Z
                   <input
                     class="slide"
                     id="slider-light-z"
@@ -260,12 +265,12 @@
               </div>
             </div>
 
-            <!-- Spot Light Tab -->
-            <div id="spotLight" class="tab-content">
-              <!-- Add toggle switch -->
+            <!-- Spot Light Content -->
+            <div id="spot-light-content" class="light-content">
+              <!-- Toggle switch -->
               <div class="param-panel horizontal-align">
                 <div class="slider">
-                  Spot Light
+                  Enable
                   <label class="switch">
                     <input type="checkbox" id="spot-light-toggle" checked />
                     <span class="switch-slider"></span>
@@ -273,10 +278,10 @@
                 </div>
               </div>
 
-              <!-- Spot Light Position Controls -->
+              <!-- Position Controls -->
               <div class="param-panel horizontal-align">
                 <div class="slider">
-                  Light Position X
+                  Position X
                   <input
                     class="slide"
                     id="slider-spot-x"
@@ -294,7 +299,7 @@
 
               <div class="param-panel horizontal-align">
                 <div class="slider">
-                  Light Position Y
+                  Position Y
                   <input
                     class="slide"
                     id="slider-spot-y"
@@ -312,7 +317,7 @@
 
               <div class="param-panel horizontal-align">
                 <div class="slider">
-                  Light Position Z
+                  Position Z
                   <input
                     class="slide"
                     id="slider-spot-z"
@@ -328,7 +333,7 @@
                 </div>
               </div>
 
-              <!-- Spot Light Direction Controls -->
+              <!-- Direction Controls -->
               <div class="param-panel horizontal-align">
                 <div class="slider">
                   Direction X
@@ -383,7 +388,7 @@
                 </div>
               </div>
 
-              <!-- Spot Light Angle Control -->
+              <!-- Cutoff Angle Control -->
               <div class="param-panel horizontal-align">
                 <div class="slider">
                   Cutoff Angle

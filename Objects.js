@@ -1220,4 +1220,23 @@ function initializeTextureControls() {
   });
 }
 
+function openLightTab(evt, lightId) {
+  // Hide all light content
+  var lightContent = document.getElementsByClassName("light-content");
+  for (var i = 0; i < lightContent.length; i++) {
+    lightContent[i].classList.remove("active");
+  }
+
+  // Remove active class from all light tabs
+  var lightTabs =
+    evt.currentTarget.parentElement.getElementsByClassName("light-tab");
+  for (var i = 0; i < lightTabs.length; i++) {
+    lightTabs[i].classList.remove("active");
+  }
+
+  // Show the selected light content and mark tab as active
+  document.getElementById(lightId).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+
 /*-----------------------------------------------------------------------------------*/

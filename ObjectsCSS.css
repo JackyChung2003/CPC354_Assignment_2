@@ -391,3 +391,40 @@ input:checked + .switch-slider:before {
 .object-content.active {
   display: block;
 }
+
+/* Light Tabs Styles */
+.light-tabs {
+  display: flex;
+  border-bottom: 2px solid #00b4d8;
+  margin-bottom: 15px;
+}
+
+.light-tab {
+  background-color: transparent;
+  border: none;
+  padding: 10px 20px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 14px;
+}
+
+.light-tab:hover {
+  background-color: rgba(0, 180, 216, 0.2);
+}
+
+.light-tab.active {
+  background-color: #00b4d8;
+  border-radius: 4px 4px 0 0;
+}
+
+.light-content {
+  display: none;
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 4px 4px;
+}
+
+.light-content.active {
+  display: block;
+}
