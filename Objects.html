@@ -29,20 +29,18 @@
       varying vec2 fTexCoord;
 
       void main() {
-          // Check if this is the light source
-          if (materialAmbient.r >= 1.0 && materialAmbient.g >= 1.0 && materialAmbient.b >= 1.0) {
-              fNormal = vec3(1.0, 1.0, 1.0);
-          } else if (flatShading) {
-              // For flat shading, use the vertex normal directly
-              // The face normal effect will be achieved by not interpolating in the fragment shader
+          // Pass texture coordinates to fragment shader
+          fTexCoord = vTexCoord;
+
+          if (flatShading) {
+              // For flat shading, pass the vertex normal directly
               fNormal = normalize(normalMatrix * vNormal);
           } else {
-              // For smooth shading, use the vertex normal
+              // For smooth shading, use interpolated normal
               fNormal = normalize(normalMatrix * vNormal);
           }
 
           fPosition = (modelViewMatrix * vPosition).xyz;
-          fTexCoord = vTexCoord;
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;
       }
     </script>
@@ -140,6 +138,7 @@
               }
           }
 
+          // Apply texture if enabled
           if (useTexture) {
               vec4 texColor = texture2D(texture, fTexCoord);
               finalColor = finalColor * texColor;
@@ -564,127 +563,460 @@
           <div class="control-section">
             <h3 class="section-title">Material Properties</h3>
 
-            <!-- Object Selection -->
-            <div class="param-panel horizontal-align">
-              <div class="slider">
-                Select Object:
-                <select id="object-select" class="select-box">
-                  <option value="cylinder">Cylinder</option>
-                  <option value="cube">Cube</option>
-                  <option value="sphere">Sphere</option>
-                  <option value="wall">Wall</option>
-                </select>
+            <!-- Object Tabs -->
+            <div class="object-tabs">
+              <button
+                class="object-tab active"
+                onclick="openObjectTab(event, 'cylinder-props')"
+              >
+                Cylinder
+              </button>
+              <button
+                class="object-tab"
+                onclick="openObjectTab(event, 'cube-props')"
+              >
+                Cube
+              </button>
+              <button
+                class="object-tab"
+                onclick="openObjectTab(event, 'sphere-props')"
+              >
+                Sphere
+              </button>
+              <button
+                class="object-tab"
+                onclick="openObjectTab(event, 'wall-props')"
+              >
+                Wall
+              </button>
+            </div>
+
+            <!-- Cylinder Properties -->
+            <div id="cylinder-props" class="object-content active">
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Ambient Color
+                  <input
+                    type="color"
+                    id="cylinder-ambient-color"
+                    value="#800000"
+                  />
+                </div>
+                <div class="slider">
+                  Ambient Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="cylinder-ambient-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.5"
+                  />1
+                  <span id="cylinder-text-ambient-coef">0.5</span>
+                </div>
+              </div>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Diffuse Color
+                  <input
+                    type="color"
+                    id="cylinder-diffuse-color"
+                    value="#ff0000"
+                  />
+                </div>
+                <div class="slider">
+                  Diffuse Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="cylinder-diffuse-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.8"
+                  />1
+                  <span id="cylinder-text-diffuse-coef">0.8</span>
+                </div>
+              </div>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Specular Color
+                  <input
+                    type="color"
+                    id="cylinder-specular-color"
+                    value="#ffffff"
+                  />
+                </div>
+                <div class="slider">
+                  Specular Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="cylinder-specular-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.5"
+                  />1
+                  <span id="cylinder-text-specular-coef">0.5</span>
+                </div>
+              </div>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Shininess
+                  <br />1<input
+                    class="slide"
+                    id="cylinder-shininess"
+                    type="range"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value="30"
+                  />100
+                  <span id="cylinder-text-shininess">30</span>
+                </div>
+              </div>
+
+              <!-- Texture controls for cylinder -->
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Cylinder Texture
+                  <input
+                    type="file"
+                    id="cylinder-texture-upload"
+                    accept="image/*"
+                    class="texture-input"
+                  />
+                </div>
+              </div>
+              <div class="param-panel horizontal-align">
+                <div class="checkText">Enable Texture</div>
+                <label class="switch">
+                  <input type="checkbox" id="cylinder-texture-toggle" />
+                  <span class="switch-slider"></span>
+                </label>
               </div>
             </div>
 
-            <!-- Material Colors -->
-            <div class="param-panel horizontal-align">
-              <div class="slider">
-                Material Ambient Color
-                <input
-                  type="color"
-                  id="material-ambient-color"
-                  value="#808080"
-                />
+            <!-- Cube Properties -->
+            <div id="cube-props" class="object-content">
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Ambient Color
+                  <input type="color" id="cube-ambient-color" value="#008000" />
+                </div>
+                <div class="slider">
+                  Ambient Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="cube-ambient-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.5"
+                  />1
+                  <span id="cube-text-ambient-coef">0.5</span>
+                </div>
               </div>
-              <div class="slider">
-                Ambient Coefficient
-                <br />0<input
-                  class="slide"
-                  id="ambient-coef"
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value="0.5"
-                />1
-                <span id="text-ambient-coef">0.5</span>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Diffuse Color
+                  <input type="color" id="cube-diffuse-color" value="#00ff00" />
+                </div>
+                <div class="slider">
+                  Diffuse Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="cube-diffuse-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.8"
+                  />1
+                  <span id="cube-text-diffuse-coef">0.8</span>
+                </div>
+              </div>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Specular Color
+                  <input
+                    type="color"
+                    id="cube-specular-color"
+                    value="#ffffff"
+                  />
+                </div>
+                <div class="slider">
+                  Specular Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="cube-specular-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.5"
+                  />1
+                  <span id="cube-text-specular-coef">0.5</span>
+                </div>
+              </div>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Shininess
+                  <br />1<input
+                    class="slide"
+                    id="cube-shininess"
+                    type="range"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value="30"
+                  />100
+                  <span id="cube-text-shininess">30</span>
+                </div>
+              </div>
+
+              <!-- Texture controls for cube -->
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Cube Texture
+                  <input
+                    type="file"
+                    id="cube-texture-upload"
+                    accept="image/*"
+                    class="texture-input"
+                  />
+                </div>
+              </div>
+              <div class="param-panel horizontal-align">
+                <div class="checkText">Enable Texture</div>
+                <label class="switch">
+                  <input type="checkbox" id="cube-texture-toggle" />
+                  <span class="switch-slider"></span>
+                </label>
               </div>
             </div>
 
-            <div class="param-panel horizontal-align">
-              <div class="slider">
-                Material Diffuse Color
-                <input
-                  type="color"
-                  id="material-diffuse-color"
-                  value="#808080"
-                />
+            <!-- Sphere Properties -->
+            <div id="sphere-props" class="object-content">
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Ambient Color
+                  <input
+                    type="color"
+                    id="sphere-ambient-color"
+                    value="#000080"
+                  />
+                </div>
+                <div class="slider">
+                  Ambient Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="sphere-ambient-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.5"
+                  />1
+                  <span id="sphere-text-ambient-coef">0.5</span>
+                </div>
               </div>
-              <div class="slider">
-                Diffuse Coefficient
-                <br />0<input
-                  class="slide"
-                  id="diffuse-coef"
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value="0.5"
-                />1
-                <span id="text-diffuse-coef">0.5</span>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Diffuse Color
+                  <input
+                    type="color"
+                    id="sphere-diffuse-color"
+                    value="#0000ff"
+                  />
+                </div>
+                <div class="slider">
+                  Diffuse Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="sphere-diffuse-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.8"
+                  />1
+                  <span id="sphere-text-diffuse-coef">0.8</span>
+                </div>
+              </div>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Specular Color
+                  <input
+                    type="color"
+                    id="sphere-specular-color"
+                    value="#ffffff"
+                  />
+                </div>
+                <div class="slider">
+                  Specular Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="sphere-specular-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.5"
+                  />1
+                  <span id="sphere-text-specular-coef">0.5</span>
+                </div>
+              </div>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Shininess
+                  <br />1<input
+                    class="slide"
+                    id="sphere-shininess"
+                    type="range"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value="30"
+                  />100
+                  <span id="sphere-text-shininess">30</span>
+                </div>
+              </div>
+
+              <!-- Texture controls for sphere -->
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Sphere Texture
+                  <input
+                    type="file"
+                    id="sphere-texture-upload"
+                    accept="image/*"
+                    class="texture-input"
+                  />
+                </div>
+              </div>
+              <div class="param-panel horizontal-align">
+                <div class="checkText">Enable Texture</div>
+                <label class="switch">
+                  <input type="checkbox" id="sphere-texture-toggle" />
+                  <span class="switch-slider"></span>
+                </label>
               </div>
             </div>
 
-            <div class="param-panel horizontal-align">
-              <div class="slider">
-                Material Specular Color
-                <input
-                  type="color"
-                  id="material-specular-color"
-                  value="#808080"
-                />
+            <!-- Wall Properties -->
+            <div id="wall-props" class="object-content">
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Ambient Color
+                  <input type="color" id="wall-ambient-color" value="#808080" />
+                </div>
+                <div class="slider">
+                  Ambient Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="wall-ambient-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.5"
+                  />1
+                  <span id="wall-text-ambient-coef">0.5</span>
+                </div>
               </div>
-              <div class="slider">
-                Specular Coefficient
-                <br />0<input
-                  class="slide"
-                  id="specular-coef"
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value="0.5"
-                />1
-                <span id="text-specular-coef">0.5</span>
-              </div>
-            </div>
 
-            <!-- Add this inside the Material Properties Section, after the specular controls -->
-            <div class="param-panel horizontal-align">
-              <div class="slider">
-                Shininess
-                <br />1<input
-                  class="slide"
-                  id="material-shininess"
-                  type="range"
-                  min="1"
-                  max="100"
-                  step="1"
-                  value="30"
-                />100
-                <span id="text-material-shininess">30</span>
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Diffuse Color
+                  <input type="color" id="wall-diffuse-color" value="#ffffff" />
+                </div>
+                <div class="slider">
+                  Diffuse Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="wall-diffuse-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.8"
+                  />1
+                  <span id="wall-text-diffuse-coef">0.8</span>
+                </div>
               </div>
-            </div>
 
-            <!-- Texture controls -->
-            <div class="param-panel horizontal-align">
-              <div class="slider">
-                Texture Image
-                <input
-                  type="file"
-                  id="texture-upload"
-                  accept="image/*"
-                  class="texture-input"
-                />
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Material Specular Color
+                  <input
+                    type="color"
+                    id="wall-specular-color"
+                    value="#ffffff"
+                  />
+                </div>
+                <div class="slider">
+                  Specular Coefficient
+                  <br />0<input
+                    class="slide"
+                    id="wall-specular-coef"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value="0.5"
+                  />1
+                  <span id="wall-text-specular-coef">0.5</span>
+                </div>
               </div>
-            </div>
-            <div class="param-panel horizontal-align">
-              <div class="checkText">Enable Texture</div>
-              <label class="switch">
-                <input type="checkbox" id="texture-toggle" />
-                <span class="switch-slider"></span>
-              </label>
+
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Shininess
+                  <br />1<input
+                    class="slide"
+                    id="wall-shininess"
+                    type="range"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value="30"
+                  />100
+                  <span id="wall-text-shininess">30</span>
+                </div>
+              </div>
+
+              <!-- Texture controls for wall -->
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Wall Texture
+                  <input
+                    type="file"
+                    id="wall-texture-upload"
+                    accept="image/*"
+                    class="texture-input"
+                  />
+                </div>
+              </div>
+              <div class="param-panel horizontal-align">
+                <div class="checkText">Enable Texture</div>
+                <label class="switch">
+                  <input type="checkbox" id="wall-texture-toggle" />
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
             </div>
 
             <!-- Add hidden image elements for storing uploaded textures -->
@@ -692,6 +1024,7 @@
               <img id="sphere-texture" alt="sphere texture" />
               <img id="cube-texture" alt="cube texture" />
               <img id="cylinder-texture" alt="cylinder texture" />
+              <img id="wall-texture" alt="wall texture" />
             </div>
           </div>
         </div>

@@ -354,3 +354,40 @@ input:checked + .switch-slider:before {
 .texture-controls.active {
   display: block;
 }
+
+/* Object Tabs Styles */
+.object-tabs {
+  display: flex;
+  border-bottom: 2px solid #00b4d8;
+  margin-bottom: 15px;
+}
+
+.object-tab {
+  background-color: transparent;
+  border: none;
+  padding: 10px 20px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 14px;
+}
+
+.object-tab:hover {
+  background-color: rgba(0, 180, 216, 0.2);
+}
+
+.object-tab.active {
+  background-color: #00b4d8;
+  border-radius: 4px 4px 0 0;
+}
+
+.object-content {
+  display: none;
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 4px 4px;
+}
+
+.object-content.active {
+  display: block;
+}

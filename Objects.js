@@ -163,15 +163,22 @@ var useTextures = {
 var textureToggle;
 var textureUpload;
 
+// Add at the top with other variable declarations
+var ambientProductLoc,
+  diffuseProductLoc,
+  specularProductLoc,
+  shininessLoc,
+  materialAmbientLoc;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
 
 window.onload = function init() {
   // Initialize objects with corrected scaling
-  cylinderObj = cylinder(72, 3, true); // Adjusted height
+  cylinderObj = cylinder(72, 3, true);
   cylinderObj.Rotate(45, [1, 1, 0]);
-  cylinderObj.Scale(1.2, 1.2, 1.2); // Scaled to proper cylinder dimensions
+  cylinderObj.Scale(1.2, 1.2, 1.2);
   concatData(cylinderObj);
 
   cubeObj = cube();
@@ -209,6 +216,12 @@ window.onload = function init() {
   // WebGL setup
   getUIElement();
   configWebGL();
+  setupShaderLocations();
+
+  // Initialize material controls for each object
+  initializeMaterialControls();
+  initializeTextureControls();
+
   render();
 
   // Set initial values for spot light controls
@@ -277,65 +290,6 @@ window.onload = function init() {
     render();
   };
 
-  // Add material control handlers
-  document.getElementById("object-select").onchange = function () {
-    currentObject = this.value;
-    updateMaterialControls();
-  };
-
-  document.getElementById("material-ambient-color").oninput = function () {
-    const color = hexToRgb(this.value);
-    materials[currentObject].ambient = vec4(color.r, color.g, color.b, 1.0);
-    render();
-  };
-
-  document.getElementById("material-diffuse-color").oninput = function () {
-    const color = hexToRgb(this.value);
-    materials[currentObject].diffuse = vec4(color.r, color.g, color.b, 1.0);
-    render();
-  };
-
-  document.getElementById("material-specular-color").oninput = function () {
-    const color = hexToRgb(this.value);
-    materials[currentObject].specular = vec4(color.r, color.g, color.b, 1.0);
-    render();
-  };
-
-  document.getElementById("ambient-coef").oninput = function () {
-    materials[currentObject].ambientCoef = parseFloat(this.value);
-    document.getElementById("text-ambient-coef").innerHTML = this.value;
-    render();
-  };
-
-  document.getElementById("diffuse-coef").oninput = function () {
-    materials[currentObject].diffuseCoef = parseFloat(this.value);
-    document.getElementById("text-diffuse-coef").innerHTML = this.value;
-    render();
-  };
-
-  document.getElementById("specular-coef").oninput = function () {
-    materials[currentObject].specularCoef = parseFloat(this.value);
-    document.getElementById("text-specular-coef").innerHTML = this.value;
-    render();
-  };
-
-  document.getElementById("material-shininess").oninput = function () {
-    materials[currentObject].shininess = parseFloat(this.value);
-    document.getElementById("text-material-shininess").innerHTML = this.value;
-    render();
-  };
-
-  // Add shininess control handler
-  document
-    .getElementById("material-shininess")
-    .addEventListener("input", function () {
-      materials[currentObject].shininess = parseFloat(this.value);
-      document.getElementById("text-material-shininess").innerHTML = this.value;
-      render();
-    });
-
-  updateMaterialControls();
-
   // Add shading toggle handler
   document.getElementById("shading-toggle").onchange = function () {
     smoothShading = this.checked;
@@ -346,29 +300,13 @@ window.onload = function init() {
     render();
   };
 
-  textureToggle = document.getElementById("texture-toggle");
-  textureUpload = document.getElementById("texture-upload");
+  // Initialize texture controls for each object
+  initializeTextureControls();
 
-  textureToggle.onchange = function () {
-    useTextures[currentObject] = this.checked;
-    render();
-  };
-
-  textureUpload.onchange = function (event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const img = document.getElementById(`${currentObject}-texture`);
-      img.onload = function () {
-        configureTexture(img, currentObject);
-        render();
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  };
+  // Set initial object and update UI
+  currentObject = "cylinder";
+  updateMaterialControls("cylinder", materials.cylinder);
+  render();
 };
 
 // Retrieve all elements from HTML and store in the corresponding variables
@@ -535,17 +473,21 @@ function configWebGL() {
     // Setup shader locations
     setupShaderLocations();
 
-    // Add texture coordinate buffer setup
+    // Create and setup texture coordinate buffer
     texCoordBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(texCoordsArray), gl.STATIC_DRAW);
 
+    // Get texture coordinate attribute location
     vTexCoord = gl.getAttribLocation(program, "vTexCoord");
-    gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vTexCoord);
+    if (vTexCoord !== -1) {
+      // Only setup if attribute exists
+      gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(vTexCoord);
+    }
 
-    // Add texture sampler setup
-    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+    // Setup texture unit
+    gl.activeTexture(gl.TEXTURE0);
   } catch (error) {
     console.error("WebGL initialization error:", error);
     alert("Failed to initialize WebGL: " + error.message);
@@ -564,46 +506,19 @@ function render() {
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
   gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
-  // Calculate and update normal matrix
-  nMatrix = normalMatrix(modelViewMatrix, true);
-  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
+  // Set shading mode
+  gl.uniform1i(gl.getUniformLocation(program, "flatShading"), !smoothShading);
 
-  // Update lighting products
-  ambientProduct = mult(lightAmbient, materialAmbient);
-  diffuseProduct = mult(lightDiffuse, materialDiffuse);
-  specularProduct = mult(lightSpecular, materialSpecular);
-
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "ambientProduct"),
-    flatten(ambientProduct)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "diffuseProduct"),
-    flatten(diffuseProduct)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "specularProduct"),
-    flatten(specularProduct)
-  );
-  gl.uniform4fv(gl.getUniformLocation(program, "lightPos"), flatten(lightPos));
+  // Update material uniforms for current object
+  if (materials[currentObject]) {
+    updateMaterialUniforms(materials[currentObject]);
+  }
 
   // Update light uniforms
-  gl.uniform1i(
-    gl.getUniformLocation(program, "pointLightEnabled"),
-    pointLightEnabled ? 1 : 0
-  );
-  gl.uniform1i(
-    gl.getUniformLocation(program, "spotLightEnabled"),
-    spotLightEnabled ? 1 : 0
-  );
-
-  // Point light uniforms
   gl.uniform4fv(
     gl.getUniformLocation(program, "pointLightPos"),
     flatten(lightPos)
   );
-
-  // Spot light uniforms
   gl.uniform4fv(
     gl.getUniformLocation(program, "spotLightPos"),
     flatten(lightPos)
@@ -613,6 +528,15 @@ function render() {
     flatten(spotDirection)
   );
   gl.uniform1f(gl.getUniformLocation(program, "spotCutoff"), spotCutoff);
+
+  gl.uniform1i(
+    gl.getUniformLocation(program, "pointLightEnabled"),
+    pointLightEnabled ? 1 : 0
+  );
+  gl.uniform1i(
+    gl.getUniformLocation(program, "spotLightEnabled"),
+    spotLightEnabled ? 1 : 0
+  );
 
   drawCylinder();
   drawCube();
@@ -627,87 +551,80 @@ function render() {
 
 // Draw functions for Cylinder, Cube, and Sphere
 function drawCylinder() {
-  var mat = materials.cylinder;
-  updateMaterialUniforms(mat);
+  updateMaterialUniforms(materials.cylinder);
 
   // Set texture state for cylinder
-  gl.uniform1i(
-    gl.getUniformLocation(program, "useTexture"),
-    useTextures.cylinder
-  );
+  gl.activeTexture(gl.TEXTURE0);
   if (useTextures.cylinder && textures.cylinder) {
     gl.bindTexture(gl.TEXTURE_2D, textures.cylinder);
+    gl.uniform1i(gl.getUniformLocation(program, "useTexture"), true);
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+    gl.uniform2fv(
+      gl.getUniformLocation(program, "vTexCoord"),
+      flatten(texCoordsArray)
+    );
   } else {
+    gl.bindTexture(gl.TEXTURE_2D, null);
     gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
   }
 
   var mvMatrix = mult(modelViewMatrix, translate(-2, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
-  var nMatrix = normalMatrix(mvMatrix, true);
-  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
-
   gl.drawArrays(gl.TRIANGLES, 0, cylinderV);
 }
 
 function drawCube() {
-  var mat = materials.cube;
-  updateMaterialUniforms(mat);
+  updateMaterialUniforms(materials.cube);
 
   // Set texture state for cube
-  gl.uniform1i(gl.getUniformLocation(program, "useTexture"), useTextures.cube);
+  gl.activeTexture(gl.TEXTURE0);
   if (useTextures.cube && textures.cube) {
     gl.bindTexture(gl.TEXTURE_2D, textures.cube);
+    gl.uniform1i(gl.getUniformLocation(program, "useTexture"), true);
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
   } else {
+    gl.bindTexture(gl.TEXTURE_2D, null);
     gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
   }
 
   var mvMatrix = mult(modelViewMatrix, translate(0, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
-  var nMatrix = normalMatrix(mvMatrix, true);
-  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
-
   gl.drawArrays(gl.TRIANGLES, cylinderV, cubeV);
 }
 
 function drawSphere() {
-  var mat = materials.sphere;
-  updateMaterialUniforms(mat);
+  updateMaterialUniforms(materials.sphere);
 
   // Set texture state for sphere
-  gl.uniform1i(
-    gl.getUniformLocation(program, "useTexture"),
-    useTextures.sphere
-  );
+  gl.activeTexture(gl.TEXTURE0);
   if (useTextures.sphere && textures.sphere) {
     gl.bindTexture(gl.TEXTURE_2D, textures.sphere);
+    gl.uniform1i(gl.getUniformLocation(program, "useTexture"), true);
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
   } else {
+    gl.bindTexture(gl.TEXTURE_2D, null);
     gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
   }
 
   var mvMatrix = mult(modelViewMatrix, translate(2, 0, 0));
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
 
-  var nMatrix = normalMatrix(mvMatrix, true);
-  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
-
   gl.drawArrays(gl.TRIANGLES, cylinderV + cubeV, sphereV);
 }
 
 function drawWall() {
-  var mat = materials.wall;
-  updateMaterialUniforms(mat);
+  updateMaterialUniforms(materials.wall);
 
   // Set texture state for wall
-  gl.uniform1i(gl.getUniformLocation(program, "useTexture"), useTextures.wall);
+  gl.activeTexture(gl.TEXTURE0);
   if (useTextures.wall && textures.wall) {
     gl.bindTexture(gl.TEXTURE_2D, textures.wall);
+    gl.uniform1i(gl.getUniformLocation(program, "useTexture"), true);
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
   } else {
+    gl.bindTexture(gl.TEXTURE_2D, null);
     gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
   }
 
@@ -719,9 +636,6 @@ function drawWall() {
     mult(translate(0, 0, -2), scale(8, 4.5, 0.01))
   );
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(mvMatrix));
-
-  var nMatrix = normalMatrix(mvMatrix, true);
-  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 
   gl.drawArrays(gl.TRIANGLES, cylinderV + cubeV + sphereV, wallV);
 }
@@ -735,14 +649,15 @@ function concatData(shape) {
 
 // Add utility function for converting hex colors to RGB
 function hexToRgb(hex) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16) / 255,
-        g: parseInt(result[2], 16) / 255,
-        b: parseInt(result[3], 16) / 255,
-      }
-    : null;
+  // Remove the # if present
+  hex = hex.replace(/^#/, "");
+
+  // Parse the hex values
+  var r = parseInt(hex.substring(0, 2), 16) / 255;
+  var g = parseInt(hex.substring(2, 4), 16) / 255;
+  var b = parseInt(hex.substring(4, 6), 16) / 255;
+
+  return { r: r, g: g, b: b };
 }
 
 // Add tab switching function
@@ -821,102 +736,62 @@ function inverse3(m) {
   return result;
 }
 
-function updateMaterialUniforms(material) {
-  // Calculate lighting products
-  var ambientProduct = vec4(
-    material.ambient[0] * material.ambientCoef * lightAmbient[0],
-    material.ambient[1] * material.ambientCoef * lightAmbient[1],
-    material.ambient[2] * material.ambientCoef * lightAmbient[2],
-    1.0
+function updateMaterialUniforms(mat) {
+  if (!mat) return;
+
+  // Calculate products with coefficients
+  var ambientProduct = mult(lightAmbient, scale4(mat.ambientCoef, mat.ambient));
+  var diffuseProduct = mult(lightDiffuse, scale4(mat.diffuseCoef, mat.diffuse));
+  var specularProduct = mult(
+    lightSpecular,
+    scale4(mat.specularCoef, mat.specular)
   );
 
-  var diffuseProduct = vec4(
-    material.diffuse[0] * material.diffuseCoef * lightDiffuse[0],
-    material.diffuse[1] * material.diffuseCoef * lightDiffuse[1],
-    material.diffuse[2] * material.diffuseCoef * lightDiffuse[2],
-    1.0
-  );
+  gl.uniform4fv(ambientProductLoc, flatten(ambientProduct));
+  gl.uniform4fv(diffuseProductLoc, flatten(diffuseProduct));
+  gl.uniform4fv(specularProductLoc, flatten(specularProduct));
+  gl.uniform1f(shininessLoc, mat.shininess);
+  gl.uniform4fv(materialAmbientLoc, flatten(mat.ambient));
 
-  var specularProduct = vec4(
-    material.specular[0] * material.specularCoef * lightSpecular[0],
-    material.specular[1] * material.specularCoef * lightSpecular[1],
-    material.specular[2] * material.specularCoef * lightSpecular[2],
-    1.0
-  );
-
-  // Send material properties to shader
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "materialAmbient"),
-    flatten(material.ambient)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "materialDiffuse"),
-    flatten(material.diffuse)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "materialSpecular"),
-    flatten(material.specular)
-  );
-
-  // Send lighting products to shader
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "ambientProduct"),
-    flatten(ambientProduct)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "diffuseProduct"),
-    flatten(diffuseProduct)
-  );
-  gl.uniform4fv(
-    gl.getUniformLocation(program, "specularProduct"),
-    flatten(specularProduct)
-  );
-
-  // Send coefficients and shininess
-  gl.uniform1f(
-    gl.getUniformLocation(program, "ambientCoef"),
-    material.ambientCoef
-  );
-  gl.uniform1f(
-    gl.getUniformLocation(program, "diffuseCoef"),
-    material.diffuseCoef
-  );
-  gl.uniform1f(
-    gl.getUniformLocation(program, "specularCoef"),
-    material.specularCoef
-  );
-  gl.uniform1f(gl.getUniformLocation(program, "shininess"), material.shininess);
-
-  // Add flat shading uniform - note we invert smoothShading since the uniform is named flatShading
-  if (currentObject === "wall") {
-    gl.uniform1i(gl.getUniformLocation(program, "flatShading"), false);
-  } else {
-    gl.uniform1i(gl.getUniformLocation(program, "flatShading"), !smoothShading);
-  }
+  // Update normal matrix
+  nMatrix = normalMatrix(modelViewMatrix, true);
+  gl.uniformMatrix3fv(normalMatrixLoc, false, flatten(nMatrix));
 }
 
-function updateMaterialControls() {
-  const material = materials[currentObject];
-  document.getElementById("material-ambient-color").value = rgbToHex(
-    material.ambient
-  );
-  document.getElementById("material-diffuse-color").value = rgbToHex(
-    material.diffuse
-  );
-  document.getElementById("material-specular-color").value = rgbToHex(
-    material.specular
-  );
-  document.getElementById("ambient-coef").value = material.ambientCoef;
-  document.getElementById("diffuse-coef").value = material.diffuseCoef;
-  document.getElementById("specular-coef").value = material.specularCoef;
-  document.getElementById("material-shininess").value = material.shininess;
+// Helper function to scale vec4
+function scale4(s, v) {
+  return vec4(s * v[0], s * v[1], s * v[2], v[3]);
+}
 
-  document.getElementById("text-ambient-coef").innerHTML = material.ambientCoef;
-  document.getElementById("text-diffuse-coef").innerHTML = material.diffuseCoef;
-  document.getElementById("text-specular-coef").innerHTML =
-    material.specularCoef;
-  document.getElementById("text-material-shininess").innerHTML =
-    material.shininess;
+function updateMaterialControls(objName, mat) {
+  if (!mat || !objName) return;
+
+  // Update color inputs
+  document.getElementById(`${objName}-ambient-color`).value = rgbToHex(
+    mat.ambient
+  );
+  document.getElementById(`${objName}-diffuse-color`).value = rgbToHex(
+    mat.diffuse
+  );
+  document.getElementById(`${objName}-specular-color`).value = rgbToHex(
+    mat.specular
+  );
+
+  // Update coefficient sliders
+  document.getElementById(`${objName}-ambient-coef`).value = mat.ambientCoef;
+  document.getElementById(`${objName}-diffuse-coef`).value = mat.diffuseCoef;
+  document.getElementById(`${objName}-specular-coef`).value = mat.specularCoef;
+  document.getElementById(`${objName}-shininess`).value = mat.shininess;
+
+  // Update coefficient text displays
+  document.getElementById(`${objName}-text-ambient-coef`).innerHTML =
+    mat.ambientCoef;
+  document.getElementById(`${objName}-text-diffuse-coef`).innerHTML =
+    mat.diffuseCoef;
+  document.getElementById(`${objName}-text-specular-coef`).innerHTML =
+    mat.specularCoef;
+  document.getElementById(`${objName}-text-shininess`).innerHTML =
+    mat.shininess;
 }
 
 // Helper function to convert RGB vector to hex
@@ -938,6 +813,13 @@ function setupShaderLocations() {
   projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
   normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
 
+  // Get material uniform locations
+  ambientProductLoc = gl.getUniformLocation(program, "ambientProduct");
+  diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct");
+  specularProductLoc = gl.getUniformLocation(program, "specularProduct");
+  shininessLoc = gl.getUniformLocation(program, "shininess");
+  materialAmbientLoc = gl.getUniformLocation(program, "materialAmbient");
+
   // Re-bind buffers
   gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
@@ -946,6 +828,12 @@ function setupShaderLocations() {
   gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
   gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vNormal);
+
+  // Setup texture coordinates
+  vTexCoord = gl.getAttribLocation(program, "vTexCoord");
+  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+  gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vTexCoord);
 }
 
 // Add this function to render the light source
@@ -1130,16 +1018,34 @@ function setupCameraControls() {
 
 // Add texture configuration function
 function configureTexture(image, objectType) {
+  // Create and bind new texture
   textures[objectType] = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, textures[objectType]);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
 
+  // Generate mipmap if power of 2
   if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
     gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(
+      gl.TEXTURE_2D,
+      gl.TEXTURE_MIN_FILTER,
+      gl.LINEAR_MIPMAP_LINEAR
+    );
   } else {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  }
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+  // Enable texture for this object
+  useTextures[objectType] = true;
+  const toggle = document.getElementById(`${objectType}-texture-toggle`);
+  if (toggle) {
+    toggle.checked = true;
   }
 }
 
@@ -1160,9 +1066,158 @@ function selectObject(objName) {
   textureControls[objName].container.classList.add("active");
 
   // Update material controls
-  updateMaterialControls();
+  updateMaterialControls(objName, materials[objName]);
 
   render();
+}
+
+function openObjectTab(evt, objectId) {
+  // Hide all object content
+  var objectContent = document.getElementsByClassName("object-content");
+  for (var i = 0; i < objectContent.length; i++) {
+    objectContent[i].classList.remove("active");
+  }
+
+  // Remove active class from all tabs
+  var objectTabs = document.getElementsByClassName("object-tab");
+  for (var i = 0; i < objectTabs.length; i++) {
+    objectTabs[i].classList.remove("active");
+  }
+
+  // Show the selected object content and mark tab as active
+  document.getElementById(objectId).classList.add("active");
+  evt.currentTarget.classList.add("active");
+
+  // Update current object
+  currentObject = objectId.split("-")[0];
+
+  // Update UI with current object's values
+  updateMaterialControls(currentObject, materials[currentObject]);
+
+  render();
+}
+
+function initializeMaterialControls() {
+  ["cylinder", "cube", "sphere", "wall"].forEach((obj) => {
+    // Initialize ambient color control
+    document.getElementById(`${obj}-ambient-color`).oninput = function () {
+      const color = hexToRgb(this.value);
+      materials[obj].ambient = vec4(color.r, color.g, color.b, 1.0);
+      if (obj === currentObject) {
+        updateMaterialUniforms(materials[obj]);
+      }
+      render();
+    };
+
+    // Initialize ambient coefficient control
+    document.getElementById(`${obj}-ambient-coef`).oninput = function () {
+      materials[obj].ambientCoef = parseFloat(this.value);
+      document.getElementById(`${obj}-text-ambient-coef`).innerHTML =
+        this.value;
+      if (obj === currentObject) {
+        updateMaterialUniforms(materials[obj]);
+      }
+      render();
+    };
+
+    // Initialize diffuse color control
+    document.getElementById(`${obj}-diffuse-color`).oninput = function () {
+      const color = hexToRgb(this.value);
+      materials[obj].diffuse = vec4(color.r, color.g, color.b, 1.0);
+      if (obj === currentObject) {
+        updateMaterialUniforms(materials[obj]);
+      }
+      render();
+    };
+
+    // Initialize diffuse coefficient control
+    document.getElementById(`${obj}-diffuse-coef`).oninput = function () {
+      materials[obj].diffuseCoef = parseFloat(this.value);
+      document.getElementById(`${obj}-text-diffuse-coef`).innerHTML =
+        this.value;
+      if (obj === currentObject) {
+        updateMaterialUniforms(materials[obj]);
+      }
+      render();
+    };
+
+    // Initialize specular color control
+    document.getElementById(`${obj}-specular-color`).oninput = function () {
+      const color = hexToRgb(this.value);
+      materials[obj].specular = vec4(color.r, color.g, color.b, 1.0);
+      if (obj === currentObject) {
+        updateMaterialUniforms(materials[obj]);
+      }
+      render();
+    };
+
+    // Initialize specular coefficient control
+    document.getElementById(`${obj}-specular-coef`).oninput = function () {
+      materials[obj].specularCoef = parseFloat(this.value);
+      document.getElementById(`${obj}-text-specular-coef`).innerHTML =
+        this.value;
+      if (obj === currentObject) {
+        updateMaterialUniforms(materials[obj]);
+      }
+      render();
+    };
+
+    // Initialize shininess control
+    document.getElementById(`${obj}-shininess`).oninput = function () {
+      materials[obj].shininess = parseFloat(this.value);
+      document.getElementById(`${obj}-text-shininess`).innerHTML = this.value;
+      if (obj === currentObject) {
+        updateMaterialUniforms(materials[obj]);
+      }
+      render();
+    };
+  });
+}
+
+function initializeTextureControls() {
+  ["cylinder", "cube", "sphere", "wall"].forEach((obj) => {
+    const textureToggle = document.getElementById(`${obj}-texture-toggle`);
+    const textureUpload = document.getElementById(`${obj}-texture-upload`);
+
+    if (textureToggle && textureUpload) {
+      textureToggle.onchange = function () {
+        useTextures[obj] = this.checked;
+        if (obj === currentObject) {
+          if (this.checked && textures[obj]) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, textures[obj]);
+            gl.uniform1i(gl.getUniformLocation(program, "useTexture"), true);
+            gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+          } else {
+            gl.uniform1i(gl.getUniformLocation(program, "useTexture"), false);
+          }
+        }
+        render();
+      };
+
+      textureUpload.onchange = function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            configureTexture(img, obj);
+            if (obj === currentObject) {
+              gl.activeTexture(gl.TEXTURE0);
+              gl.bindTexture(gl.TEXTURE_2D, textures[obj]);
+              gl.uniform1i(gl.getUniformLocation(program, "useTexture"), true);
+              gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+            }
+            render();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      };
+    }
+  });
 }
 
 /*-----------------------------------------------------------------------------------*/
