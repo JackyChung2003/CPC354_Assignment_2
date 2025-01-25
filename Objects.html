@@ -23,24 +23,39 @@
       uniform mat3 normalMatrix;
       uniform vec4 materialAmbient;
       uniform bool flatShading;
+      uniform bool toonShading;
+      uniform vec4 lightPos;
+      uniform vec4 pointLightPos;
 
       varying vec3 fNormal;
       varying vec3 fPosition;
       varying vec2 fTexCoord;
+      varying vec3 vLightDir;
+      varying float vLightIntensity;
 
       void main() {
-          // Pass texture coordinates to fragment shader
           fTexCoord = vTexCoord;
+          vec3 pos = (modelViewMatrix * vPosition).xyz;
+          fPosition = pos;
+
+          // Calculate lighting direction in vertex shader
+          vec3 L = normalize(pointLightPos.xyz - pos);
+          vec3 N = normalize(normalMatrix * vNormal);
+
+          // Pre-calculate light intensity in vertex shader
+          if (toonShading) {
+              vLightIntensity = max(dot(N, L), 0.0);
+          }
+
+          // Pass light direction to fragment shader
+          vLightDir = L;
 
           if (flatShading) {
-              // For flat shading, pass the vertex normal directly
               fNormal = normalize(normalMatrix * vNormal);
           } else {
-              // For smooth shading, use interpolated normal
               fNormal = normalize(normalMatrix * vNormal);
           }
 
-          fPosition = (modelViewMatrix * vPosition).xyz;
           gl_Position = projectionMatrix * modelViewMatrix * vPosition;
       }
     </script>
@@ -53,6 +68,8 @@
       varying vec3 fNormal;
       varying vec3 fPosition;
       varying vec2 fTexCoord;
+      varying vec3 vLightDir;
+      varying float vLightIntensity;
 
       uniform vec4 ambientProduct;
       uniform vec4 diffuseProduct;
@@ -68,40 +85,95 @@
       uniform bool flatShading;
       uniform sampler2D texture;
       uniform bool useTexture;
+      uniform bool toonShading;
+      uniform int toonLevels;
+
+      vec4 calculateToonShading(vec4 color, float intensity) {
+          if (toonShading) {
+              // Create distinct levels based on toonLevels
+              float numLevels = float(toonLevels);
+              float scaledIntensity = intensity * numLevels;
+              float level = floor(scaledIntensity) / (numLevels - 1.0);
+
+              // Add rim lighting effect
+              float edgeIntensity = dot(normalize(fNormal), normalize(-fPosition));
+              float rimThreshold = 0.3;
+              if (edgeIntensity < rimThreshold) {
+                  return vec4(0.0, 0.0, 0.0, 1.0);
+              }
+
+              // Adjust color based on level
+              vec3 toonColor = color.rgb;
+
+              // For low toon levels, make colors more saturated
+              if (toonLevels <= 4) {
+                  toonColor = mix(toonColor, vec3(0.0), 0.2); // Darken slightly
+                  level = floor(scaledIntensity + 0.5) / (numLevels - 1.0); // Sharper transitions
+              } else {
+                  // For high toon levels, create smoother gradients
+                  level = smoothstep(0.0, 1.0, level);
+              }
+
+              return vec4(toonColor * level, color.a);
+          }
+          return color;
+      }
 
       void main() {
           vec3 N;
           if (flatShading) {
-              // Calculate flat shading normal using derivatives
               vec3 dx = dFdx(fPosition);
               vec3 dy = dFdy(fPosition);
               N = normalize(cross(dx, dy));
           } else {
-              // Use interpolated normal for smooth shading
               N = normalize(fNormal);
           }
 
           vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+          vec3 L = normalize(vLightDir);
 
-          // Add ambient light
-          finalColor += ambientProduct;
+          if (toonShading) {
+              // Enhanced edge detection
+              float edge = length(fwidth(N));
+              // Adjust edge thickness based on toon levels
+              float edgeThreshold = toonLevels <= 4 ? 0.4 : 0.3;
+              if (edge > edgeThreshold) {
+                  finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+              }
 
-          // Point light calculation
+              // Add extra darkening at edges
+              float edgeFactor = 1.0 - smoothstep(0.2, 0.4, dot(N, L));
+              finalColor.rgb *= (1.0 - edgeFactor * 0.5);
+
+              // Adjust contrast based on toon levels
+              if (toonLevels <= 4) {
+                  finalColor.rgb = pow(finalColor.rgb, vec3(1.2)); // Increase contrast for low levels
+              }
+          }
+
           if (pointLightEnabled) {
-              vec3 L;
-              if (pointLightPos.w == 0.0)
-                  L = normalize(pointLightPos.xyz);
-              else
-                  L = normalize(pointLightPos.xyz - fPosition);
-
               vec3 E = -normalize(fPosition);
               vec3 H = normalize(L + E);
 
               float Kd = max(dot(L, N), 0.0);
-              vec4 diffuse = Kd * diffuseProduct;
+              vec4 diffuse;
+              if (toonShading) {
+                  // Create sharper diffuse transitions
+                  float toonKd = smoothstep(0.2, 0.8, Kd);
+                  diffuse = calculateToonShading(diffuseProduct, toonKd);
+              } else {
+                  diffuse = Kd * diffuseProduct;
+              }
 
               float Ks = pow(max(dot(N, H), 0.0), shininess);
-              vec4 specular = Ks * specularProduct;
+              vec4 specular;
+              if (toonShading) {
+                  // Create more dramatic specular highlights
+                  float toonKs = smoothstep(0.8, 0.85, Ks);
+                  specular = calculateToonShading(specularProduct, toonKs);
+              } else {
+                  specular = Ks * specularProduct;
+              }
 
               if (dot(L, N) < 0.0) {
                   specular = vec4(0.0, 0.0, 0.0, 1.0);
@@ -125,10 +197,10 @@
                   float spotIntensity = pow(spotFactor, 2.0);
 
                   float Kd = max(dot(L, N), 0.0);
-                  vec4 diffuse = Kd * diffuseProduct * spotIntensity * 2.0;
+                  vec4 diffuse = calculateToonShading(diffuseProduct * spotIntensity * 2.0, Kd);
 
                   float Ks = pow(max(dot(N, H), 0.0), shininess);
-                  vec4 specular = Ks * specularProduct * spotIntensity * 2.0;
+                  vec4 specular = calculateToonShading(specularProduct * spotIntensity * 2.0, Ks);
 
                   if (dot(L, N) < 0.0) {
                       specular = vec4(0.0, 0.0, 0.0, 1.0);
@@ -142,6 +214,19 @@
           if (useTexture) {
               vec4 texColor = texture2D(texture, fTexCoord);
               finalColor = finalColor * texColor;
+          }
+
+          if (toonShading) {
+              // Enhanced edge detection
+              float edge = length(fwidth(N));
+              float edgeThreshold = 0.3;
+              if (edge > edgeThreshold) {
+                  finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+              }
+
+              // Add extra darkening at edges
+              float edgeFactor = 1.0 - smoothstep(0.3, 0.5, dot(N, L));
+              finalColor.rgb *= (1.0 - edgeFactor * 0.5);
           }
 
           gl_FragColor = finalColor;
@@ -445,6 +530,31 @@
                 <span id="shading-mode-text" style="margin-left: 10px"
                   >Smooth</span
                 >
+              </div>
+            </div>
+
+            <!-- Add this after the shading mode toggle -->
+            <div class="param-panel horizontal-align">
+              <div class="checkText">Toon Shading</div>
+              <label class="switch">
+                <input type="checkbox" id="toon-toggle" />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <div class="param-panel horizontal-align">
+              <div class="slider">
+                Toon Levels
+                <br />2<input
+                  class="slide"
+                  id="toon-levels"
+                  type="range"
+                  min="2"
+                  max="8"
+                  step="1"
+                  value="4"
+                />8
+                <span id="text-toon-levels">4</span>
               </div>
             </div>
           </div>

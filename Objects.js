@@ -170,6 +170,11 @@ var ambientProductLoc,
   shininessLoc,
   materialAmbientLoc;
 
+// Add to variable declarations
+var toonShading = false;
+var toonLevels = 4; // Initial value matching the HTML slider
+var toonShadingLoc, toonLevelsLoc; // Add uniform locations
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -307,6 +312,10 @@ window.onload = function init() {
   currentObject = "cylinder";
   updateMaterialControls("cylinder", materials.cylinder);
   render();
+
+  // Initialize toon shader controls
+  document.getElementById("toon-levels").value = toonLevels;
+  document.getElementById("text-toon-levels").innerHTML = toonLevels;
 };
 
 // Retrieve all elements from HTML and store in the corresponding variables
@@ -431,6 +440,21 @@ function getUIElement() {
     document.getElementById("text-spot-angle").innerHTML = this.value;
     render();
   };
+
+  // Add toon shading controls
+  document.getElementById("toon-toggle").onchange = function () {
+    toonShading = this.checked;
+    gl.uniform1i(toonShadingLoc, toonShading);
+    render();
+  };
+
+  document.getElementById("toon-levels").oninput = function () {
+    toonLevels = parseInt(this.value);
+    document.getElementById("text-toon-levels").innerHTML = this.value;
+    gl.useProgram(program); // Make sure the right program is active
+    gl.uniform1i(toonLevelsLoc, toonLevels);
+    render();
+  };
 }
 
 // Configure WebGL Settings
@@ -488,6 +512,13 @@ function configWebGL() {
 
     // Setup texture unit
     gl.activeTexture(gl.TEXTURE0);
+
+    // Get uniform locations
+    modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
+    projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
+    normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
+    toonShadingLoc = gl.getUniformLocation(program, "toonShading");
+    toonLevelsLoc = gl.getUniformLocation(program, "toonLevels");
   } catch (error) {
     console.error("WebGL initialization error:", error);
     alert("Failed to initialize WebGL: " + error.message);
@@ -537,6 +568,10 @@ function render() {
     gl.getUniformLocation(program, "spotLightEnabled"),
     spotLightEnabled ? 1 : 0
   );
+
+  // Update toon shading uniforms
+  gl.uniform1i(toonShadingLoc, toonShading);
+  gl.uniform1i(toonLevelsLoc, toonLevels);
 
   drawCylinder();
   drawCube();
@@ -812,6 +847,8 @@ function setupShaderLocations() {
   modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
   projectionMatrixLoc = gl.getUniformLocation(program, "projectionMatrix");
   normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
+  toonShadingLoc = gl.getUniformLocation(program, "toonShading");
+  toonLevelsLoc = gl.getUniformLocation(program, "toonLevels");
 
   // Get material uniform locations
   ambientProductLoc = gl.getUniformLocation(program, "ambientProduct");
@@ -834,6 +871,10 @@ function setupShaderLocations() {
   gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
   gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vTexCoord);
+
+  // Set initial values
+  gl.uniform1i(toonShadingLoc, toonShading);
+  gl.uniform1i(toonLevelsLoc, toonLevels);
 }
 
 // Add this function to render the light source

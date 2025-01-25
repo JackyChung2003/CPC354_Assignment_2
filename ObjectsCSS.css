@@ -430,3 +430,15 @@ input:checked + .switch-slider:before {
 .light-content.active {
   display: block;
 }
+
+/* Toon shading controls */
+.toon-controls {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.toon-controls .slider {
+  margin-top: 10px;
+}
