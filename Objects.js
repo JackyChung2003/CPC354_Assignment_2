@@ -178,6 +178,10 @@ var toonShadingLoc, toonLevelsLoc; // Add uniform locations
 // Add to variable declarations at the top
 var globalAmbientLoc;
 var globalAmbient = vec4(0.2, 0.2, 0.2, 1.0); // Initial ambient color
+var lightPosLoc; // Add this variable declaration
+
+// Add to variable declarations
+var lightType = "point"; // "point" or "directional"
 
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
@@ -338,7 +342,15 @@ function getUIElement() {
 
   // Add event listeners for light controls
   lightTypeSelect.onchange = function () {
-    lightPos[3] = this.value === "directional" ? 0.0 : 1.0;
+    lightType = this.value;
+    if (lightType === "directional") {
+      // For directional light, set w component to 0
+      lightPos[3] = 0.0;
+    } else {
+      // For point light, set w component to 1
+      lightPos[3] = 1.0;
+    }
+    gl.uniform4fv(lightPosLoc, flatten(lightPos));
     render();
   };
 
@@ -580,6 +592,14 @@ function render() {
 
   // Update global ambient uniform
   gl.uniform4fv(globalAmbientLoc, flatten(globalAmbient));
+
+  // Update light position uniform with proper w component
+  if (lightType === "directional") {
+    lightPos[3] = 0.0;
+  } else {
+    lightPos[3] = 1.0;
+  }
+  gl.uniform4fv(lightPosLoc, flatten(lightPos));
 
   drawCylinder();
   drawCube();
@@ -865,6 +885,7 @@ function setupShaderLocations() {
   shininessLoc = gl.getUniformLocation(program, "shininess");
   materialAmbientLoc = gl.getUniformLocation(program, "materialAmbient");
   globalAmbientLoc = gl.getUniformLocation(program, "globalAmbient");
+  lightPosLoc = gl.getUniformLocation(program, "lightPos");
 
   // Re-bind buffers
   gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
