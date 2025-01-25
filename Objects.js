@@ -50,7 +50,7 @@ var ambientProduct, diffuseProduct, specularProduct;
 var ambient = 0.5,
   diffuse = 0.5,
   specular = 0.5;
-var lightPos = vec4(0.0, 2.0, 0.0, 1.0);
+var lightPos = vec4(0.0, 2.0, 0.0, 0.0);
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
 var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
@@ -181,7 +181,7 @@ var globalAmbient = vec4(0.2, 0.2, 0.2, 1.0); // Initial ambient color
 var lightPosLoc; // Add this variable declaration
 
 // Add to variable declarations
-var lightType = "point"; // "point" or "directional"
+var lightType = "directional"; // Initialize as directional to match default UI
 
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
@@ -234,6 +234,12 @@ window.onload = function init() {
   // Initialize material controls for each object
   initializeMaterialControls();
   initializeTextureControls();
+
+  // Initialize light type to match the default dropdown selection
+  const lightTypeSelect = document.getElementById("light-type");
+  lightType = lightTypeSelect.value; // Should be "directional" by default
+  lightPos[3] = lightType === "directional" ? 0.0 : 1.0;
+  gl.uniform4fv(lightPosLoc, flatten(lightPos));
 
   render();
 
@@ -343,13 +349,7 @@ function getUIElement() {
   // Add event listeners for light controls
   lightTypeSelect.onchange = function () {
     lightType = this.value;
-    if (lightType === "directional") {
-      // For directional light, set w component to 0
-      lightPos[3] = 0.0;
-    } else {
-      // For point light, set w component to 1
-      lightPos[3] = 1.0;
-    }
+    lightPos[3] = lightType === "directional" ? 0.0 : 1.0;
     gl.uniform4fv(lightPosLoc, flatten(lightPos));
     render();
   };
@@ -593,12 +593,7 @@ function render() {
   // Update global ambient uniform
   gl.uniform4fv(globalAmbientLoc, flatten(globalAmbient));
 
-  // Update light position uniform with proper w component
-  if (lightType === "directional") {
-    lightPos[3] = 0.0;
-  } else {
-    lightPos[3] = 1.0;
-  }
+  // Update light position with correct w component
   gl.uniform4fv(lightPosLoc, flatten(lightPos));
 
   drawCylinder();
