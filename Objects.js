@@ -175,6 +175,10 @@ var toonShading = false;
 var toonLevels = 4; // Initial value matching the HTML slider
 var toonShadingLoc, toonLevelsLoc; // Add uniform locations
 
+// Add to variable declarations at the top
+var globalAmbientLoc;
+var globalAmbient = vec4(0.2, 0.2, 0.2, 1.0); // Initial ambient color
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -359,10 +363,11 @@ function getUIElement() {
     render();
   };
 
-  // Color picker event handlers
+  // Update global ambient color handler
   ambientColorPicker.oninput = function () {
     const color = hexToRgb(this.value);
-    lightAmbient = vec4(color.r, color.g, color.b, 1.0);
+    globalAmbient = vec4(color.r, color.g, color.b, 1.0);
+    gl.uniform4fv(globalAmbientLoc, flatten(globalAmbient));
     render();
   };
 
@@ -451,7 +456,7 @@ function getUIElement() {
   document.getElementById("toon-levels").oninput = function () {
     toonLevels = parseInt(this.value);
     document.getElementById("text-toon-levels").innerHTML = this.value;
-    gl.useProgram(program); // Make sure the right program is active
+    gl.useProgram(program);
     gl.uniform1i(toonLevelsLoc, toonLevels);
     render();
   };
@@ -572,6 +577,9 @@ function render() {
   // Update toon shading uniforms
   gl.uniform1i(toonShadingLoc, toonShading);
   gl.uniform1i(toonLevelsLoc, toonLevels);
+
+  // Update global ambient uniform
+  gl.uniform4fv(globalAmbientLoc, flatten(globalAmbient));
 
   drawCylinder();
   drawCube();
@@ -775,7 +783,7 @@ function updateMaterialUniforms(mat) {
   if (!mat) return;
 
   // Calculate products with coefficients
-  var ambientProduct = mult(lightAmbient, scale4(mat.ambientCoef, mat.ambient));
+  var ambientProduct = scale4(mat.ambientCoef, mat.ambient);
   var diffuseProduct = mult(lightDiffuse, scale4(mat.diffuseCoef, mat.diffuse));
   var specularProduct = mult(
     lightSpecular,
@@ -856,6 +864,7 @@ function setupShaderLocations() {
   specularProductLoc = gl.getUniformLocation(program, "specularProduct");
   shininessLoc = gl.getUniformLocation(program, "shininess");
   materialAmbientLoc = gl.getUniformLocation(program, "materialAmbient");
+  globalAmbientLoc = gl.getUniformLocation(program, "globalAmbient");
 
   // Re-bind buffers
   gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);

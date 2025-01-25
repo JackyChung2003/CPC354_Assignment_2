@@ -74,6 +74,7 @@
       uniform vec4 ambientProduct;
       uniform vec4 diffuseProduct;
       uniform vec4 specularProduct;
+      uniform vec4 globalAmbient;
       uniform vec4 lightPos;
       uniform float shininess;
       uniform bool pointLightEnabled;
@@ -130,32 +131,24 @@
           }
 
           vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
-          vec3 L = normalize(vLightDir);
+
+          // Add global ambient contribution
+          finalColor += globalAmbient * ambientProduct;
 
           if (toonShading) {
               // Enhanced edge detection
               float edge = length(fwidth(N));
-              // Adjust edge thickness based on toon levels
               float edgeThreshold = toonLevels <= 4 ? 0.4 : 0.3;
               if (edge > edgeThreshold) {
                   finalColor = vec4(0.0, 0.0, 0.0, 1.0);
-              }
-
-              // Add extra darkening at edges
-              float edgeFactor = 1.0 - smoothstep(0.2, 0.4, dot(N, L));
-              finalColor.rgb *= (1.0 - edgeFactor * 0.5);
-
-              // Adjust contrast based on toon levels
-              if (toonLevels <= 4) {
-                  finalColor.rgb = pow(finalColor.rgb, vec3(1.2)); // Increase contrast for low levels
               }
           }
 
           if (pointLightEnabled) {
               vec3 E = -normalize(fPosition);
-              vec3 H = normalize(L + E);
+              vec3 H = normalize(vLightDir + E);
 
-              float Kd = max(dot(L, N), 0.0);
+              float Kd = max(dot(vLightDir, N), 0.0);
               vec4 diffuse;
               if (toonShading) {
                   // Create sharper diffuse transitions
@@ -175,7 +168,7 @@
                   specular = Ks * specularProduct;
               }
 
-              if (dot(L, N) < 0.0) {
+              if (dot(vLightDir, N) < 0.0) {
                   specular = vec4(0.0, 0.0, 0.0, 1.0);
               }
 
@@ -225,7 +218,7 @@
               }
 
               // Add extra darkening at edges
-              float edgeFactor = 1.0 - smoothstep(0.3, 0.5, dot(N, L));
+              float edgeFactor = 1.0 - smoothstep(0.3, 0.5, dot(N, vLightDir));
               finalColor.rgb *= (1.0 - edgeFactor * 0.5);
           }
 
@@ -545,7 +538,7 @@
             <div class="param-panel horizontal-align">
               <div class="slider">
                 Toon Levels
-                <br />2<input
+                <input
                   class="slide"
                   id="toon-levels"
                   type="range"
@@ -553,8 +546,10 @@
                   max="8"
                   step="1"
                   value="4"
-                />8
-                <span id="text-toon-levels">4</span>
+                />
+              </div>
+              <div class="textbox">
+                <p id="text-toon-levels">4</p>
               </div>
             </div>
           </div>
