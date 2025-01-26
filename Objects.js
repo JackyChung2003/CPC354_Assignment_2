@@ -183,6 +183,12 @@ var lightPosLoc; // Add this variable declaration
 // Add to variable declarations
 var lightType = "directional"; // Initialize as directional to match default UI
 
+// Add to variable declarations at the top
+var pointLightIntensity = 1.0;
+var spotLightIntensity = 1.0;
+var pointLightIntensityLoc;
+var spotLightIntensityLoc;
+
 /*-----------------------------------------------------------------------------------*/
 // WebGL Utilities
 /*-----------------------------------------------------------------------------------*/
@@ -472,6 +478,23 @@ function getUIElement() {
     gl.uniform1i(toonLevelsLoc, toonLevels);
     render();
   };
+
+  // Add point light intensity control
+  document.getElementById("point-light-intensity").oninput = function () {
+    pointLightIntensity = parseFloat(this.value);
+    document.getElementById("text-point-light-intensity").innerHTML =
+      this.value;
+    gl.uniform1f(pointLightIntensityLoc, pointLightIntensity);
+    render();
+  };
+
+  // Add spot light intensity control
+  document.getElementById("spot-light-intensity").oninput = function () {
+    spotLightIntensity = parseFloat(this.value);
+    document.getElementById("text-spot-light-intensity").innerHTML = this.value;
+    gl.uniform1f(spotLightIntensityLoc, spotLightIntensity);
+    render();
+  };
 }
 
 // Configure WebGL Settings
@@ -536,6 +559,16 @@ function configWebGL() {
     normalMatrixLoc = gl.getUniformLocation(program, "normalMatrix");
     toonShadingLoc = gl.getUniformLocation(program, "toonShading");
     toonLevelsLoc = gl.getUniformLocation(program, "toonLevels");
+
+    // Get light intensity uniform locations
+    pointLightIntensityLoc = gl.getUniformLocation(
+      program,
+      "pointLightIntensity"
+    );
+    spotLightIntensityLoc = gl.getUniformLocation(
+      program,
+      "spotLightIntensity"
+    );
   } catch (error) {
     console.error("WebGL initialization error:", error);
     alert("Failed to initialize WebGL: " + error.message);
@@ -595,6 +628,10 @@ function render() {
 
   // Update light position with correct w component
   gl.uniform4fv(lightPosLoc, flatten(lightPos));
+
+  // Update light intensity uniforms
+  gl.uniform1f(pointLightIntensityLoc, pointLightIntensity);
+  gl.uniform1f(spotLightIntensityLoc, spotLightIntensity);
 
   drawCylinder();
   drawCube();
@@ -881,6 +918,13 @@ function setupShaderLocations() {
   materialAmbientLoc = gl.getUniformLocation(program, "materialAmbient");
   globalAmbientLoc = gl.getUniformLocation(program, "globalAmbient");
   lightPosLoc = gl.getUniformLocation(program, "lightPos");
+
+  // Get light intensity uniform locations
+  pointLightIntensityLoc = gl.getUniformLocation(
+    program,
+    "pointLightIntensity"
+  );
+  spotLightIntensityLoc = gl.getUniformLocation(program, "spotLightIntensity");
 
   // Re-bind buffers
   gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);

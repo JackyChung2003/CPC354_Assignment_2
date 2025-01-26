@@ -89,6 +89,8 @@
       uniform bool useTexture;
       uniform bool toonShading;
       uniform int toonLevels;
+      uniform float pointLightIntensity;
+      uniform float spotLightIntensity;
 
       vec4 calculateToonShading(vec4 color, float intensity) {
           if (toonShading) {
@@ -185,6 +187,10 @@
                   specular *= attenuation;
               }
 
+              // Apply point light intensity
+              diffuse *= pointLightIntensity;
+              specular *= pointLightIntensity;
+
               finalColor += diffuse + specular;
           }
 
@@ -211,6 +217,10 @@
                   if (dot(L, N) < 0.0) {
                       specular = vec4(0.0, 0.0, 0.0, 1.0);
                   }
+
+                  // Apply spot light intensity
+                  diffuse *= spotLightIntensity;
+                  specular *= spotLightIntensity;
 
                   finalColor += diffuse + specular;
               }
@@ -354,6 +364,23 @@
                   <p id="text-light-z">1.0</p>
                 </div>
               </div>
+
+              <!-- Add intensity slider -->
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Light Intensity
+                  <br />0<input
+                    class="slide"
+                    id="point-light-intensity"
+                    type="range"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                    value="1.0"
+                  />2
+                  <span id="text-point-light-intensity">1.0</span>
+                </div>
+              </div>
             </div>
 
             <!-- Spot Light Content -->
@@ -495,6 +522,23 @@
                 </div>
                 <div class="textbox">
                   <p id="text-spot-angle">30</p>
+                </div>
+              </div>
+
+              <!-- Add intensity slider -->
+              <div class="param-panel horizontal-align">
+                <div class="slider">
+                  Light Intensity
+                  <br />0<input
+                    class="slide"
+                    id="spot-light-intensity"
+                    type="range"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                    value="1.0"
+                  />2
+                  <span id="text-spot-light-intensity">1.0</span>
                 </div>
               </div>
             </div>
